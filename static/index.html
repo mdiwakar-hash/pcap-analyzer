@@ -25,7 +25,7 @@
 
   /* Layout */
   .app { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
-  header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px; }
   header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
   header .sub { color: var(--muted); font-size: 12px; }
 
@@ -33,15 +33,21 @@
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
   .panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 14px; }
 
-  /* Upload form */
+  /* Upload area */
   .upload-area { border: 2px dashed var(--border); border-radius: 6px; padding: 28px; text-align: center; cursor: pointer; transition: border-color .2s; margin-bottom: 16px; }
   .upload-area:hover, .upload-area.drag { border-color: var(--blue); }
   .upload-area input[type=file] { display: none; }
   .upload-area .icon { font-size: 32px; margin-bottom: 8px; }
   .upload-area .label { color: var(--muted); }
   .upload-area .filename { color: var(--blue); font-weight: 600; margin-top: 6px; }
+  .upload-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; }
 
-  .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  /* Compare uploads side by side */
+  .compare-uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .compare-uploads { grid-template-columns: 1fr; } }
+
+  /* Filters */
+  .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
   .filter-group label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 4px; }
   .filter-group input, .filter-group select {
     width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
@@ -51,12 +57,17 @@
   .filter-group input:focus, .filter-group select:focus { outline: none; border-color: var(--blue); }
   .filter-group select option { background: var(--surface); }
 
+  /* Buttons */
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 5px; border: none; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; transition: opacity .15s; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-primary { background: var(--blue); color: #fff; }
   .btn-primary:hover:not(:disabled) { opacity: 0.88; }
   .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-secondary:hover:not(:disabled) { border-color: var(--blue); }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-compare-toggle { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .btn-compare-toggle.active { color: var(--purple); border-color: var(--purple); }
+  .btn-compare-toggle:hover { border-color: var(--purple); color: var(--purple); }
 
   /* Spinner */
   .spinner { display: none; align-items: center; gap: 10px; color: var(--muted); margin-left: 14px; }
@@ -69,7 +80,7 @@
   .error-box.visible { display: block; }
 
   /* Summary cards */
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
   .card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
   .card-value { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
   .card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
@@ -116,13 +127,13 @@
 
   .hidden { display: none !important; }
 
-  /* Flow table disruption counts color */
+  /* Disruption count colors */
   .disruption-count { font-weight: 700; }
   .dc-high { color: var(--red); }
   .dc-med { color: var(--yellow); }
   .dc-low { color: var(--green); }
 
-  /* Responsive */
+  /* Responsive events */
   @media (max-width: 700px) {
     .event-row { grid-template-columns: 60px 1fr; }
     .event-row .ep, .event-row .layer-badge { display: none; }
@@ -135,6 +146,26 @@
 
   /* Empty state */
   .empty { text-align: center; color: var(--muted); padding: 32px; }
+
+  /* Compare results */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--purple); margin-bottom: 10px; }
+  .diff-panel { background: #1a1430; border: 1px solid #3a2860; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .diff-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #2a2040; font-size: 12px; }
+  .diff-row:last-child { border-bottom: none; }
+  .diff-label { color: var(--muted); }
+  .diff-a { color: var(--blue); font-weight: 600; }
+  .diff-b { color: var(--purple); font-weight: 600; }
+  .diff-winner { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+  .diff-worse { background: #4a1010; color: var(--red); }
+  .diff-better { background: #0d2e1e; color: var(--green); }
+  .diff-same { background: var(--surface2); color: var(--muted); }
+
+  /* AI Diagnosis panel */
+  .ai-output { white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.7; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-top: 14px; }
+  .ai-note { font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .ai-header { display: flex; align-items: center; gap: 10px; }
 </style>
 </head>
 <body>
@@ -144,20 +175,64 @@
       <h1>&#x1F50D; PCAP Analyzer</h1>
       <div class="sub">Upload a capture file to find network, TCP, and TLS disruptions</div>
     </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-secondary btn-sm hidden" id="export-btn" onclick="exportReport()">&#x2B73; Save Report</button>
+      <button class="btn btn-compare-toggle btn-sm" id="compare-toggle" onclick="toggleCompare()">&#x229E; Compare</button>
+    </div>
   </header>
 
-  <!-- Upload + Filter -->
+  <!-- Upload & Filter -->
   <div class="panel">
-    <div class="panel-title">Upload &amp; Filter</div>
+    <div class="panel-title" id="panel-title">Upload &amp; Filter</div>
     <form id="form">
-      <div class="upload-area" id="drop-zone">
-        <input type="file" id="pcap-file" accept=".pcap,.pcapng,.cap">
-        <div class="icon">&#x1F4C1;</div>
-        <div class="label">Drop a .pcap file here or <strong style="color:var(--blue)">click to browse</strong></div>
-        <div class="filename" id="filename-display"></div>
+
+      <!-- Single file upload -->
+      <div id="single-upload">
+        <div class="upload-area" id="drop-zone">
+          <input type="file" id="pcap-file" accept=".pcap,.pcapng,.cap">
+          <div class="icon">&#x1F4C1;</div>
+          <div class="label">Drop a .pcap file here or <strong style="color:var(--blue)">click to browse</strong></div>
+          <div class="filename" id="filename-display"></div>
+        </div>
       </div>
 
+      <!-- Compare: two file uploads -->
+      <div id="compare-upload" class="compare-uploads hidden">
+        <div>
+          <div class="upload-label" style="color:var(--blue)">File A</div>
+          <div class="upload-area" id="drop-zone-a">
+            <input type="file" id="pcap-file-a" accept=".pcap,.pcapng,.cap">
+            <div class="icon">&#x1F4C1;</div>
+            <div class="label" style="font-size:12px">File A — click to browse</div>
+            <div class="filename" id="filename-display-a"></div>
+          </div>
+        </div>
+        <div>
+          <div class="upload-label" style="color:var(--purple)">File B</div>
+          <div class="upload-area" id="drop-zone-b">
+            <input type="file" id="pcap-file-b" accept=".pcap,.pcapng,.cap">
+            <div class="icon">&#x1F4C1;</div>
+            <div class="label" style="font-size:12px">File B — click to browse</div>
+            <div class="filename" id="filename-display-b"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick presets + filters -->
       <div class="filters">
+        <div class="filter-group">
+          <label>Quick Preset</label>
+          <select id="preset" onchange="applyPreset(this.value)">
+            <option value="">-- none --</option>
+            <option value="https">HTTPS / TLS (443)</option>
+            <option value="smb">SMB (445)</option>
+            <option value="nfs">NFS (2049)</option>
+            <option value="dns">DNS (53)</option>
+            <option value="icmp">ICMP</option>
+            <option value="rdp">RDP (3389)</option>
+            <option value="ssh">SSH (22)</option>
+          </select>
+        </div>
         <div class="filter-group">
           <label>Endpoint IP <span style="color:var(--muted)">(either direction)</span></label>
           <input type="text" id="endpoint_ip" name="endpoint_ip" placeholder="e.g. 10.1.1.1">
@@ -188,7 +263,7 @@
       <div style="display:flex; align-items:center; gap:10px;">
         <button type="submit" class="btn btn-primary" id="analyze-btn" disabled>&#x25B6; Analyze</button>
         <button type="button" class="btn btn-secondary" id="clear-btn">&#x2715; Clear</button>
-        <span class="spinner" id="spinner"><span class="spin"></span> Analyzing&hellip;</span>
+        <span class="spinner" id="spinner"><span class="spin"></span> <span id="spinner-label">Analyzing&hellip;</span></span>
       </div>
     </form>
   </div>
@@ -196,19 +271,15 @@
   <!-- Error -->
   <div class="error-box" id="error-box"></div>
 
-  <!-- Results (hidden until analysis completes) -->
+  <!-- Single file results -->
   <div id="results" class="hidden">
-
-    <!-- Active filters -->
     <div id="filter-badges" style="margin-bottom:12px;"></div>
 
-    <!-- Summary cards -->
     <div class="panel">
       <div class="panel-title">Summary</div>
       <div class="cards" id="summary-cards"></div>
     </div>
 
-    <!-- Flows table -->
     <div class="panel">
       <div class="section-header">
         <div class="section-title">Flows</div>
@@ -218,19 +289,9 @@
         <table id="flows-table">
           <thead>
             <tr>
-              <th>Stream</th>
-              <th>Source</th>
-              <th>Destination</th>
-              <th>Duration</th>
-              <th>Pkts</th>
-              <th>Bytes &#x2193;</th>
-              <th>Bytes &#x2191;</th>
-              <th>Retrans</th>
-              <th>RSTs</th>
-              <th>Zero Win</th>
-              <th>OOO</th>
-              <th>TLS</th>
-              <th>SNI</th>
+              <th>Stream</th><th>Source</th><th>Destination</th><th>Duration</th>
+              <th>Pkts</th><th>Bytes &#x2193;</th><th>Bytes &#x2191;</th>
+              <th>Retrans</th><th>RSTs</th><th>Zero Win</th><th>OOO</th><th>TLS</th><th>SNI</th>
             </tr>
           </thead>
           <tbody id="flows-body"></tbody>
@@ -238,18 +299,17 @@
       </div>
     </div>
 
-    <!-- Disruption events -->
     <div class="panel">
       <div class="section-header">
         <div class="section-title">Disruption Events</div>
         <div class="section-count" id="events-count"></div>
       </div>
-      <div class="tabs">
+      <div class="tabs" id="events-tabs">
         <div class="tab active" data-tab="all">All</div>
         <div class="tab" data-tab="tcp">TCP</div>
         <div class="tab" data-tab="tls">TLS</div>
       </div>
-      <div style="display:grid; grid-template-columns: 70px 90px 80px 180px 180px 1fr; gap:8px; padding: 0 8px 6px; border-bottom: 1px solid var(--border); margin-bottom:4px;">
+      <div style="display:grid;grid-template-columns:70px 90px 80px 180px 180px 1fr;gap:8px;padding:0 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">
         <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Time</span>
         <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Type</span>
         <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Layer</span>
@@ -261,86 +321,178 @@
       <div class="empty hidden" id="events-empty">No events for this filter</div>
     </div>
 
-  </div><!-- /results -->
+    <!-- AI Diagnosis -->
+    <div class="panel" id="ai-panel">
+      <div class="ai-header">
+        <div class="panel-title" style="margin-bottom:0">AI Diagnosis</div>
+        <button class="btn btn-secondary btn-sm" id="ai-btn" onclick="generateAIDiagnosis()">&#x2728; Generate</button>
+        <span class="spinner" id="ai-spinner"><span class="spin"></span> Thinking&hellip;</span>
+      </div>
+      <div id="ai-result"></div>
+    </div>
+  </div>
+
+  <!-- Compare results -->
+  <div id="compare-results" class="hidden">
+    <div class="diff-panel" id="diff-summary"></div>
+
+    <div class="compare-grid">
+      <div id="compare-col-a"></div>
+      <div id="compare-col-b"></div>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <script>
 const $ = id => document.getElementById(id);
 
-// --- File drop & select ---
+// ─── State ────────────────────────────────────────────────
+let currentReport = null;
+let compareMode = false;
+let allEvents = [];
+
+// ─── Presets ──────────────────────────────────────────────
+const PRESETS = {
+  https: { port: '443', protocol: 'TCP' },
+  smb:   { port: '445', protocol: 'TCP' },
+  nfs:   { port: '2049', protocol: 'TCP' },
+  dns:   { port: '53', protocol: '' },
+  icmp:  { port: '', protocol: 'ICMP' },
+  rdp:   { port: '3389', protocol: 'TCP' },
+  ssh:   { port: '22', protocol: 'TCP' },
+};
+
+function applyPreset(key) {
+  if (!key) return;
+  const p = PRESETS[key] || {};
+  $('port').value = p.port || '';
+  $('protocol').value = p.protocol || '';
+}
+
+// ─── Compare toggle ───────────────────────────────────────
+function toggleCompare() {
+  compareMode = !compareMode;
+  const toggle = $('compare-toggle');
+  toggle.classList.toggle('active', compareMode);
+  $('single-upload').classList.toggle('hidden', compareMode);
+  $('compare-upload').classList.toggle('hidden', !compareMode);
+  $('analyze-btn').textContent = compareMode ? '⧉ Compare' : '▶ Analyze';
+  $('panel-title').textContent = compareMode ? 'Compare Two Captures' : 'Upload & Filter';
+  updateAnalyzeEnabled();
+}
+
+// ─── File drop & select — single ──────────────────────────
 const dropZone = $('drop-zone');
 const fileInput = $('pcap-file');
-const analyzeBtn = $('analyze-btn');
-const filenameDisplay = $('filename-display');
 
 dropZone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', () => updateFileDisplay(fileInput.files[0]));
-
+fileInput.addEventListener('change', () => { updateFileDisplay(fileInput.files[0], 'filename-display'); updateAnalyzeEnabled(); });
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if (f) {
-    const dt = new DataTransfer();
-    dt.items.add(f);
-    fileInput.files = dt.files;
-    updateFileDisplay(f);
-  }
+  e.preventDefault(); dropZone.classList.remove('drag');
+  setFile(e.dataTransfer.files[0], fileInput, 'filename-display');
 });
 
-function updateFileDisplay(file) {
+// ─── File drop & select — compare A & B ───────────────────
+['a', 'b'].forEach(side => {
+  const dz = $(`drop-zone-${side}`);
+  const fi = $(`pcap-file-${side}`);
+  dz.addEventListener('click', () => fi.click());
+  fi.addEventListener('change', () => { updateFileDisplay(fi.files[0], `filename-display-${side}`); updateAnalyzeEnabled(); });
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    setFile(e.dataTransfer.files[0], fi, `filename-display-${side}`);
+  });
+});
+
+function setFile(file, input, displayId) {
   if (!file) return;
-  filenameDisplay.textContent = `${file.name} (${fmt_bytes(file.size)})`;
-  analyzeBtn.disabled = false;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
+  updateFileDisplay(file, displayId);
+  updateAnalyzeEnabled();
 }
 
+function updateFileDisplay(file, displayId) {
+  if (!file) return;
+  $(displayId).textContent = `${file.name} (${fmt_bytes(file.size)})`;
+}
+
+function updateAnalyzeEnabled() {
+  if (compareMode) {
+    $('analyze-btn').disabled = !($('pcap-file-a').files[0] && $('pcap-file-b').files[0]);
+  } else {
+    $('analyze-btn').disabled = !$('pcap-file').files[0];
+  }
+}
+
+// ─── Clear ────────────────────────────────────────────────
 $('clear-btn').addEventListener('click', () => {
   $('form').reset();
-  filenameDisplay.textContent = '';
-  analyzeBtn.disabled = true;
+  ['filename-display', 'filename-display-a', 'filename-display-b'].forEach(id => $(id).textContent = '');
+  $('analyze-btn').disabled = true;
   $('results').classList.add('hidden');
+  $('compare-results').classList.add('hidden');
+  $('export-btn').classList.add('hidden');
   $('error-box').classList.remove('visible');
-  $('error-box').textContent = '';
+  $('ai-result').innerHTML = '';
+  currentReport = null;
+  allEvents = [];
 });
 
-// --- Form submit ---
+// ─── Form submit ──────────────────────────────────────────
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
-  const file = fileInput.files[0];
-  if (!file) return;
-
-  analyzeBtn.disabled = true;
+  const btn = $('analyze-btn');
+  btn.disabled = true;
   $('spinner').classList.add('active');
+  $('spinner-label').textContent = compareMode ? 'Comparing…' : 'Analyzing…';
   $('error-box').classList.remove('visible');
   $('results').classList.add('hidden');
+  $('compare-results').classList.add('hidden');
+  $('export-btn').classList.add('hidden');
+  $('ai-result').innerHTML = '';
 
   const fd = new FormData();
-  fd.append('pcap_file', file);
-  ['endpoint_ip', 'src_ip', 'dst_ip', 'port', 'protocol'].forEach(k => {
-    fd.append(k, $(`${k}`).value);
-  });
+  ['endpoint_ip', 'src_ip', 'dst_ip', 'port', 'protocol'].forEach(k => fd.append(k, $(k).value));
 
   try {
-    const res = await fetch('/api/analyze', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    renderReport(data);
+    let data;
+    if (compareMode) {
+      fd.append('pcap_file_a', $('pcap-file-a').files[0]);
+      fd.append('pcap_file_b', $('pcap-file-b').files[0]);
+      const res = await fetch('/api/compare', { method: 'POST', body: fd });
+      data = await res.json();
+      if (data.error) throw new Error(data.error);
+      renderCompare(data);
+    } else {
+      fd.append('pcap_file', $('pcap-file').files[0]);
+      const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+      data = await res.json();
+      if (data.error) throw new Error(data.error);
+      currentReport = data;
+      renderReport(data);
+      $('export-btn').classList.remove('hidden');
+    }
   } catch (err) {
     $('error-box').textContent = '⚠ ' + err.message;
     $('error-box').classList.add('visible');
   } finally {
-    analyzeBtn.disabled = false;
+    btn.disabled = false;
     $('spinner').classList.remove('active');
   }
 });
 
-// --- Render ---
+// ─── Render — single ──────────────────────────────────────
 function renderReport(r) {
   renderFilterBadges(r.filters_applied || {});
-  renderSummary(r.summary, r);
-  renderFlows(r.flows || []);
+  renderSummary(r.summary, r, 'summary-cards');
+  renderFlows(r.flows || [], 'flows-body', 'flows-count');
   renderEvents(r.disruption_timeline || []);
   $('results').classList.remove('hidden');
 }
@@ -348,9 +500,7 @@ function renderReport(r) {
 function renderFilterBadges(filters) {
   const el = $('filter-badges');
   el.innerHTML = '';
-  const labels = {
-    endpoint_ip: 'Endpoint IP', src_ip: 'Src IP', dst_ip: 'Dst IP', port: 'Port', protocol: 'Protocol'
-  };
+  const labels = { endpoint_ip: 'Endpoint IP', src_ip: 'Src IP', dst_ip: 'Dst IP', port: 'Port', protocol: 'Protocol' };
   Object.entries(filters).forEach(([k, v]) => {
     if (!v) return;
     const b = document.createElement('span');
@@ -360,12 +510,11 @@ function renderFilterBadges(filters) {
   });
 }
 
-function renderSummary(s, r) {
-  const el = $('summary-cards');
+function renderSummary(s, r, targetId) {
   const cards = [
     { label: 'Flows', value: s.total_flows, cls: 'neutral' },
     { label: 'Total Packets', value: r.total_packets, cls: 'neutral' },
-    { label: 'Capture Duration', value: r.capture_duration_s + 's', cls: 'neutral' },
+    { label: 'Duration', value: r.capture_duration_s + 's', cls: 'neutral' },
     { label: 'Retransmissions', value: (s.retransmissions || 0) + (s.fast_retransmissions || 0), cls: (s.retransmissions || 0) > 0 ? 'warning' : 'ok' },
     { label: 'TCP Resets', value: s.tcp_resets, cls: s.tcp_resets > 0 ? 'critical' : 'ok' },
     { label: 'Zero Windows', value: s.zero_windows, cls: s.zero_windows > 0 ? 'critical' : 'ok' },
@@ -376,7 +525,7 @@ function renderSummary(s, r) {
     { label: 'TLS Complete', value: s.tls_handshakes_complete, cls: 'ok' },
     { label: 'High RTT Events', value: s.high_rtt_events, cls: s.high_rtt_events > 0 ? 'warning' : 'ok' },
   ];
-  el.innerHTML = cards.map(c =>
+  $(targetId).innerHTML = cards.map(c =>
     `<div class="card ${c.cls}">
       <div class="card-value">${c.value ?? 0}</div>
       <div class="card-label">${c.label}</div>
@@ -384,9 +533,9 @@ function renderSummary(s, r) {
   ).join('');
 }
 
-function renderFlows(flows) {
-  const body = $('flows-body');
-  $('flows-count').textContent = `${flows.length} flows`;
+function renderFlows(flows, bodyId, countId) {
+  const body = $(bodyId);
+  if (countId) $(countId).textContent = `${flows.length} flows`;
   if (!flows.length) {
     body.innerHTML = '<tr><td colspan="13" class="empty">No flows found</td></tr>';
     return;
@@ -395,9 +544,9 @@ function renderFlows(flows) {
     const dc = f.disruption_count || 0;
     const dcCls = dc > 20 ? 'dc-high' : dc > 5 ? 'dc-med' : dc > 0 ? 'dc-low' : '';
     const tlsBadge = f.has_tls ? `<span class="badge badge-tls">TLS</span>` : '';
-    const rstBadge = f.rst_seen ? `<span class="badge badge-critical">${f.rst_frames.length} RST</span>` : '';
-    const retransBadge = (f.retransmissions + f.fast_retransmissions) > 0
-      ? `<span class="badge badge-warning">${f.retransmissions + f.fast_retransmissions}</span>` : '0';
+    const rstBadge = f.rst_seen ? `<span class="badge badge-critical">${(f.rst_frames||[]).length} RST</span>` : '';
+    const retrans = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
+    const retransBadge = retrans > 0 ? `<span class="badge badge-warning">${retrans}</span>` : '0';
     return `<tr>
       <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
       <td class="mono">${f.src_ip}<br><span style="color:var(--muted)">:${f.src_port}</span></td>
@@ -416,8 +565,6 @@ function renderFlows(flows) {
   }).join('');
 }
 
-let allEvents = [];
-
 function renderEvents(events) {
   allEvents = events;
   renderEventsFiltered('all');
@@ -427,33 +574,28 @@ function renderEventsFiltered(tab) {
   const list = $('events-list');
   const empty = $('events-empty');
   const countEl = $('events-count');
-
-  // Filter out info-only tls_handshake_complete from "all" and "tls" tabs unless nothing else
-  let filtered = allEvents.filter(e => {
+  const filtered = allEvents.filter(e => {
     if (tab === 'tcp') return e.layer === 'tcp';
     if (tab === 'tls') return e.layer === 'tls';
     return true;
   });
-
   countEl.textContent = `${filtered.length} events`;
-
   if (!filtered.length) {
     list.innerHTML = '';
     empty.classList.remove('hidden');
     return;
   }
   empty.classList.add('hidden');
-
   list.innerHTML = filtered.map(e => {
     const sev = e.severity;
-    const badgeCls = sev === 'critical' ? 'badge-critical' : sev === 'warning' ? 'badge-warning' : sev === 'info' ? 'badge-info' : 'badge-info';
+    const badgeCls = sev === 'critical' ? 'badge-critical' : sev === 'warning' ? 'badge-warning' : 'badge-info';
     const layerBadge = e.layer === 'tls' ? 'badge-tls' : 'badge-tcp';
     const ts = e.time_relative != null ? '+' + e.time_relative.toFixed(3) + 's' : '';
     const evType = (e.event_type || e.type || '').replace(/_/g, ' ');
     return `<div class="event-row">
       <span class="ts mono">${ts}</span>
       <span><span class="badge ${badgeCls}">${evType}</span></span>
-      <span><span class="badge ${layerBadge}">${e.layer?.toUpperCase()}</span></span>
+      <span><span class="badge ${layerBadge}">${(e.layer || '').toUpperCase()}</span></span>
       <span class="ep mono">${e.src || ''}</span>
       <span class="ep mono">${e.dst || ''}</span>
       <span class="detail">${esc(e.detail || '')}</span>
@@ -461,16 +603,224 @@ function renderEventsFiltered(tab) {
   }).join('');
 }
 
-// Tabs
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    renderEventsFiltered(tab.dataset.tab);
-  });
+// Tab switching
+$('events-tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  $('events-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  renderEventsFiltered(tab.dataset.tab);
 });
 
-// --- Helpers ---
+// ─── Render — compare ─────────────────────────────────────
+function renderCompare(data) {
+  const { report_a, report_b } = data;
+  renderDiff(report_a, report_b);
+  renderCompareCol(report_a, 'compare-col-a', 'A — ' + (report_a.pcap_filename || 'File A'), 'var(--blue)');
+  renderCompareCol(report_b, 'compare-col-b', 'B — ' + (report_b.pcap_filename || 'File B'), 'var(--purple)');
+  $('compare-results').classList.remove('hidden');
+}
+
+function renderCompareCol(r, colId, label, color) {
+  const col = $(colId);
+  const sa = r.summary || {};
+  const retrans = (sa.retransmissions || 0) + (sa.fast_retransmissions || 0);
+  col.innerHTML = `
+    <div class="compare-label" style="color:${color}">${esc(label)}</div>
+    <div class="panel" style="padding:14px">
+      <div class="panel-title">Summary</div>
+      <div class="cards" id="cards-${colId}"></div>
+    </div>
+    <div class="panel" style="padding:14px">
+      <div class="section-header">
+        <div class="section-title">Flows</div>
+        <div class="section-count">${(r.flows||[]).length} flows</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Stream</th><th>Src</th><th>Dst</th><th>Pkts</th><th>Retrans</th><th>RSTs</th><th>TLS</th><th>SNI</th>
+          </tr></thead>
+          <tbody id="tbody-${colId}"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  renderSummary(sa, r, `cards-${colId}`);
+
+  // Compact flows table for compare view
+  const body = $(`tbody-${colId}`);
+  const flows = r.flows || [];
+  if (!flows.length) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">No flows</td></tr>';
+  } else {
+    body.innerHTML = flows.map(f => {
+      const rt = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
+      const rst = (f.rst_frames || []).length;
+      return `<tr>
+        <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
+        <td class="mono" style="font-size:11px">${f.src_ip}:${f.src_port}</td>
+        <td class="mono" style="font-size:11px">${f.dst_ip}:${f.dst_port}</td>
+        <td>${f.total_packets}</td>
+        <td>${rt > 0 ? `<span class="badge badge-warning">${rt}</span>` : '0'}</td>
+        <td>${rst > 0 ? `<span class="badge badge-critical">${rst}</span>` : '0'}</td>
+        <td>${f.has_tls ? '<span class="badge badge-tls">TLS</span>' : ''}</td>
+        <td style="font-size:11px;color:var(--muted)">${f.tls_sni || ''}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function renderDiff(a, b) {
+  const sa = a.summary || {}, sb = b.summary || {};
+  const fa = a.pcap_filename || 'File A', fb = b.pcap_filename || 'File B';
+
+  function diffRow(label, va, vb, lowerIsBetter) {
+    const numA = typeof va === 'number' ? va : 0;
+    const numB = typeof vb === 'number' ? vb : 0;
+    let tag = '';
+    if (numA !== numB) {
+      const aWorse = lowerIsBetter ? numA > numB : numA < numB;
+      tag = `<span class="diff-winner ${aWorse ? 'diff-worse' : 'diff-better'}">${aWorse ? 'A worse' : 'A better'}</span>`;
+    } else {
+      tag = `<span class="diff-winner diff-same">equal</span>`;
+    }
+    return `<div class="diff-row">
+      <span class="diff-label">${label}</span>
+      <span class="diff-a">${va}</span>
+      <span class="diff-b">${vb}</span>
+      ${tag}
+    </div>`;
+  }
+
+  const retA = (sa.retransmissions || 0) + (sa.fast_retransmissions || 0);
+  const retB = (sb.retransmissions || 0) + (sb.fast_retransmissions || 0);
+
+  $('diff-summary').innerHTML = `
+    <div class="panel-title" style="margin-bottom:12px">Comparison: <span style="color:var(--blue)">${esc(fa)}</span> vs <span style="color:var(--purple)">${esc(fb)}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 100px 100px 100px;gap:8px;margin-bottom:8px;">
+      <span></span>
+      <span style="font-size:10px;color:var(--blue);text-transform:uppercase;font-weight:700">File A</span>
+      <span style="font-size:10px;color:var(--purple);text-transform:uppercase;font-weight:700">File B</span>
+      <span></span>
+    </div>
+    ${diffRow('Retransmissions', retA, retB, true)}
+    ${diffRow('TCP Resets', sa.tcp_resets || 0, sb.tcp_resets || 0, true)}
+    ${diffRow('Zero Windows', sa.zero_windows || 0, sb.zero_windows || 0, true)}
+    ${diffRow('Out of Order', sa.out_of_order || 0, sb.out_of_order || 0, true)}
+    ${diffRow('TLS Failures', sa.tls_incomplete_handshakes || 0, sb.tls_incomplete_handshakes || 0, true)}
+    ${diffRow('TLS Complete', sa.tls_handshakes_complete || 0, sb.tls_handshakes_complete || 0, false)}
+    ${diffRow('Total Flows', sa.total_flows || 0, sb.total_flows || 0, false)}
+    ${diffRow('Total Packets', a.total_packets || 0, b.total_packets || 0, false)}`;
+}
+
+// ─── AI Diagnosis ─────────────────────────────────────────
+async function generateAIDiagnosis() {
+  if (!currentReport) return;
+  const btn = $('ai-btn');
+  const spinner = $('ai-spinner');
+  const result = $('ai-result');
+  btn.disabled = true;
+  spinner.classList.add('active');
+  result.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ report: currentReport }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.summary) {
+      result.innerHTML = `<div class="ai-output">${esc(data.summary)}</div>
+        <div class="ai-note">Generated by Claude (claude-opus-4-7) · Results are advisory only</div>`;
+    } else {
+      result.innerHTML = `<div class="ai-note" style="margin-top:10px">&#x26A0; ${esc(data.message || 'AI diagnosis unavailable.')}</div>`;
+    }
+  } catch (err) {
+    result.innerHTML = `<div class="ai-note" style="color:var(--red);margin-top:10px">&#x26A0; ${esc(err.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('active');
+  }
+}
+
+// ─── Export ───────────────────────────────────────────────
+function exportReport() {
+  if (!currentReport) return;
+  const r = currentReport;
+  const styleEl = document.querySelector('style');
+  const css = styleEl ? styleEl.textContent : '';
+  const fname = r.pcap_filename || 'export';
+  const exportDate = new Date().toUTCString();
+
+  // Snapshot the rendered results HTML (includes all rendered cards/tables/events)
+  const resultsHTML = $('results').innerHTML;
+
+  // We need allEvents and renderEventsFiltered for interactive tabs in the export
+  const eventsJSON = JSON.stringify(allEvents);
+
+  const html = [
+    '<!DOCTYPE html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="UTF-8">',
+    `<title>PCAP Report — ${fname}</title>`,
+    `<style>${css}</style>`,
+    '</head>',
+    '<body>',
+    '<div class="app">',
+    '<header>',
+    '<div>',
+    `<h1>&#x1F50D; PCAP Analyzer Report</h1>`,
+    `<div class="sub">Exported ${exportDate} &nbsp;&middot;&nbsp; ${fname}</div>`,
+    '</div>',
+    '</header>',
+    `<div id="results">${resultsHTML}</div>`,
+    '</div>',
+    '<script>',
+    `const $ = id => document.getElementById(id);`,
+    `let allEvents = ${eventsJSON};`,
+    `function fmt_bytes(n){if(!n)return'0 B';if(n<1024)return n+' B';if(n<1024*1024)return(n/1024).toFixed(1)+' KB';return(n/1024/1024).toFixed(1)+' MB';}`,
+    `function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}`,
+    `function renderEventsFiltered(tab){`,
+    `  const list=$('events-list'),empty=$('events-empty'),countEl=$('events-count');`,
+    `  const filtered=allEvents.filter(e=>tab==='tcp'?e.layer==='tcp':tab==='tls'?e.layer==='tls':true);`,
+    `  countEl.textContent=filtered.length+' events';`,
+    `  if(!filtered.length){list.innerHTML='';empty.classList.remove('hidden');return;}`,
+    `  empty.classList.add('hidden');`,
+    `  list.innerHTML=filtered.map(e=>{`,
+    `    const sev=e.severity,badgeCls=sev==='critical'?'badge-critical':sev==='warning'?'badge-warning':'badge-info';`,
+    `    const layerBadge=e.layer==='tls'?'badge-tls':'badge-tcp';`,
+    `    const ts=e.time_relative!=null?'+'+e.time_relative.toFixed(3)+'s':'';`,
+    `    const evType=(e.event_type||e.type||'').replace(/_/g,' ');`,
+    `    return '<div class="event-row"><span class="ts mono">'+ts+'</span><span><span class="badge '+badgeCls+'">'+evType+'</span></span><span><span class="badge '+layerBadge+'">'+(e.layer||'').toUpperCase()+'</span></span><span class="ep mono">'+esc(e.src||'')+'</span><span class="ep mono">'+esc(e.dst||'')+'</span><span class="detail">'+esc(e.detail||'')+'</span></div>';`,
+    `  }).join('');`,
+    `}`,
+    `const tabsEl=document.querySelector('#results .tabs');`,
+    `if(tabsEl){tabsEl.addEventListener('click',e=>{`,
+    `  const tab=e.target.closest('.tab');if(!tab)return;`,
+    `  tabsEl.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));`,
+    `  tab.classList.add('active');renderEventsFiltered(tab.dataset.tab);`,
+    `});}`,
+    `// Hide export/AI controls in the snapshot`,
+    `['export-btn','ai-btn','ai-spinner','ai-panel'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});`,
+    '<\/script>',
+    '</body>',
+    '</html>',
+  ].join('\n');
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pcap-report-${fname.replace(/[^a-z0-9._-]/gi, '-')}.html`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+// ─── Helpers ──────────────────────────────────────────────
 function fmt_bytes(n) {
   if (!n) return '0 B';
   if (n < 1024) return n + ' B';
@@ -483,7 +833,7 @@ function fmt_dur(s) {
   return s.toFixed(2) + 's';
 }
 function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 </script>
 </body>

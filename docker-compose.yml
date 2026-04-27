@@ -1,0 +1,14 @@
+services:
+  pcap-analyzer:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PCAP_HOST=0.0.0.0
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      # Persist uploads dir outside the container (optional — files are deleted after analysis anyway)
+      - pcap_uploads:/app/uploads
+
+volumes:
+  pcap_uploads:

@@ -11,8 +11,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 sys.path.insert(0, os.path.dirname(__file__))
 from analyzer import run_analysis
 from analyzer.tshark_runner import get_tshark_version
+from analyzer.ai_summary import generate_summary
 
-HOST = "127.0.0.1"
+HOST = os.environ.get("PCAP_HOST", "127.0.0.1")
 PORT = 8000
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -75,6 +76,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/api/analyze":
             self._handle_analyze()
+        elif self.path == "/api/compare":
+            self._handle_compare()
+        elif self.path == "/api/summary":
+            self._handle_summary()
         else:
             self._error(404, "Not found")
 
@@ -127,6 +132,70 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
+
+    def _handle_compare(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length > MAX_UPLOAD_BYTES * 2:
+            self._error(413, "Upload too large")
+            return
+
+        content_type = self.headers.get("Content-Type", "")
+        body = self.rfile.read(content_length)
+        form = parse_multipart(body, content_type)
+
+        paths = {}
+        try:
+            for key in ("pcap_file_a", "pcap_file_b"):
+                field = form.get(key)
+                if not field or not isinstance(field, dict):
+                    self._error(400, f"Missing {key}")
+                    return
+                tmp = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}.pcap")
+                with open(tmp, "wb") as f:
+                    f.write(field["data"])
+                paths[key] = (tmp, field.get("filename", key))
+
+            def _str(k):
+                v = form.get(k, "")
+                return v.strip() if isinstance(v, str) else ""
+
+            filters = {
+                "endpoint_ip": _str("endpoint_ip"),
+                "src_ip": _str("src_ip"),
+                "dst_ip": _str("dst_ip"),
+                "port": _str("port"),
+                "protocol": _str("protocol"),
+            }
+
+            report_a = run_analysis(paths["pcap_file_a"][0], filters)
+            report_a["pcap_filename"] = paths["pcap_file_a"][1]
+            report_b = run_analysis(paths["pcap_file_b"][0], filters)
+            report_b["pcap_filename"] = paths["pcap_file_b"][1]
+            self._json({"report_a": report_a, "report_b": report_b})
+
+        except Exception as exc:
+            self._json({"error": str(exc)}, status=500)
+        finally:
+            for tmp, _ in paths.values():
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+
+    def _handle_summary(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length)
+        try:
+            data = json.loads(body)
+            report = data.get("report", {})
+            summary = generate_summary(report)
+            if summary is None:
+                self._json({
+                    "summary": None,
+                    "message": "Set the ANTHROPIC_API_KEY environment variable to enable AI diagnosis.",
+                })
+            else:
+                self._json({"summary": summary})
+        except Exception as exc:
+            self._json({"error": str(exc)}, status=500)
 
     def _serve_file(self, path: str, content_type: str):
         try:

@@ -1,0 +1,13 @@
+*.pcap
+*.pcapng
+*.cap
+uploads/
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.git/
+.gitignore
+.DS_Store
