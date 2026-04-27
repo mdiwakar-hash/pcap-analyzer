@@ -1,0 +1,23 @@
+# Captured traffic — may contain sensitive customer data
+*.pcap
+*.pcapng
+*.cap
+
+# Temp upload directory
+uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCAP Analyzer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e8f0;
+    --muted: #7b8294;
+    --blue: #4f8ef7;
+    --red: #f75f5f;
+    --yellow: #f7c45f;
+    --green: #4fca8e;
+    --orange: #f7964f;
+    --purple: #a78bfa;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; min-height: 100vh; }
+  a { color: var(--blue); }
+
+  /* Layout */
+  .app { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+  header .sub { color: var(--muted); font-size: 12px; }
+
+  /* Panel */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 14px; }
+
+  /* Upload form */
+  .upload-area { border: 2px dashed var(--border); border-radius: 6px; padding: 28px; text-align: center; cursor: pointer; transition: border-color .2s; margin-bottom: 16px; }
+  .upload-area:hover, .upload-area.drag { border-color: var(--blue); }
+  .upload-area input[type=file] { display: none; }
+  .upload-area .icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-area .label { color: var(--muted); }
+  .upload-area .filename { color: var(--blue); font-weight: 600; margin-top: 6px; }
+
+  .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .filter-group label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 4px; }
+  .filter-group input, .filter-group select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+    color: var(--text); padding: 7px 10px; font-size: 13px; font-family: inherit;
+    transition: border-color .15s;
+  }
+  .filter-group input:focus, .filter-group select:focus { outline: none; border-color: var(--blue); }
+  .filter-group select option { background: var(--surface); }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 5px; border: none; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--blue); }
+
+  /* Spinner */
+  .spinner { display: none; align-items: center; gap: 10px; color: var(--muted); margin-left: 14px; }
+  .spinner.active { display: inline-flex; }
+  .spin { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error */
+  .error-box { background: #3a1a1a; border: 1px solid #7a2a2a; border-radius: 6px; padding: 12px 16px; color: var(--red); margin-bottom: 20px; display: none; }
+  .error-box.visible { display: block; }
+
+  /* Summary cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+  .card-value { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); }
+  .card.critical .card-value { color: var(--red); }
+  .card.warning .card-value { color: var(--yellow); }
+  .card.ok .card-value { color: var(--green); }
+  .card.info .card-value { color: var(--blue); }
+  .card.neutral .card-value { color: var(--text); }
+
+  /* Filter badge */
+  .filter-badge { display: inline-flex; align-items: center; gap: 6px; background: #1a2840; border: 1px solid #2a4070; border-radius: 4px; padding: 4px 10px; font-size: 11px; color: var(--blue); margin-bottom: 12px; margin-right: 6px; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid #1e2236; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .mono { font-family: 'SF Mono', 'Fira Code', monospace; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-critical { background: #4a1010; color: var(--red); }
+  .badge-warning { background: #3a2e10; color: var(--yellow); }
+  .badge-info { background: #10243a; color: var(--blue); }
+  .badge-ok { background: #0d2e1e; color: var(--green); }
+  .badge-tls { background: #231040; color: var(--purple); }
+  .badge-tcp { background: #10243a; color: var(--blue); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .tab { padding: 8px 16px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* Events list */
+  .events-list { display: flex; flex-direction: column; gap: 2px; max-height: 500px; overflow-y: auto; }
+  .event-row { display: grid; grid-template-columns: 70px 90px 80px 180px 180px 1fr; gap: 8px; align-items: start; padding: 7px 8px; border-radius: 4px; }
+  .event-row:hover { background: var(--surface2); }
+  .event-row .ts { color: var(--muted); font-size: 11px; white-space: nowrap; }
+  .event-row .ep { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .event-row .detail { font-size: 12px; color: var(--text); line-height: 1.4; }
+
+  .hidden { display: none !important; }
+
+  /* Flow table disruption counts color */
+  .disruption-count { font-weight: 700; }
+  .dc-high { color: var(--red); }
+  .dc-med { color: var(--yellow); }
+  .dc-low { color: var(--green); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .event-row { grid-template-columns: 60px 1fr; }
+    .event-row .ep, .event-row .layer-badge { display: none; }
+  }
+
+  /* Section header */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .section-count { font-size: 11px; color: var(--muted); }
+
+  /* Empty state */
+  .empty { text-align: center; color: var(--muted); padding: 32px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>&#x1F50D; PCAP Analyzer</h1>
+      <div class="sub">Upload a capture file to find network, TCP, and TLS disruptions</div>
+    </div>
+  </header>
+
+  <!-- Upload + Filter -->
+  <div class="panel">
+    <div class="panel-title">Upload &amp; Filter</div>
+    <form id="form">
+      <div class="upload-area" id="drop-zone">
+        <input type="file" id="pcap-file" accept=".pcap,.pcapng,.cap">
+        <div class="icon">&#x1F4C1;</div>
+        <div class="label">Drop a .pcap file here or <strong style="color:var(--blue)">click to browse</strong></div>
+        <div class="filename" id="filename-display"></div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>Endpoint IP <span style="color:var(--muted)">(either direction)</span></label>
+          <input type="text" id="endpoint_ip" name="endpoint_ip" placeholder="e.g. 10.1.1.1">
+        </div>
+        <div class="filter-group">
+          <label>Strict Source IP</label>
+          <input type="text" id="src_ip" name="src_ip" placeholder="e.g. 10.1.1.1">
+        </div>
+        <div class="filter-group">
+          <label>Strict Dest IP</label>
+          <input type="text" id="dst_ip" name="dst_ip" placeholder="e.g. 10.2.2.2">
+        </div>
+        <div class="filter-group">
+          <label>Port <span style="color:var(--muted)">(src or dst)</span></label>
+          <input type="number" id="port" name="port" placeholder="e.g. 443" min="1" max="65535">
+        </div>
+        <div class="filter-group">
+          <label>Protocol</label>
+          <select id="protocol" name="protocol">
+            <option value="">Any</option>
+            <option>TCP</option>
+            <option>UDP</option>
+            <option>ICMP</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button type="submit" class="btn btn-primary" id="analyze-btn" disabled>&#x25B6; Analyze</button>
+        <button type="button" class="btn btn-secondary" id="clear-btn">&#x2715; Clear</button>
+        <span class="spinner" id="spinner"><span class="spin"></span> Analyzing&hellip;</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="error-box"></div>
+
+  <!-- Results (hidden until analysis completes) -->
+  <div id="results" class="hidden">
+
+    <!-- Active filters -->
+    <div id="filter-badges" style="margin-bottom:12px;"></div>
+
+    <!-- Summary cards -->
+    <div class="panel">
+      <div class="panel-title">Summary</div>
+      <div class="cards" id="summary-cards"></div>
+    </div>
+
+    <!-- Flows table -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Flows</div>
+        <div class="section-count" id="flows-count"></div>
+      </div>
+      <div class="table-wrap">
+        <table id="flows-table">
+          <thead>
+            <tr>
+              <th>Stream</th>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Duration</th>
+              <th>Pkts</th>
+              <th>Bytes &#x2193;</th>
+              <th>Bytes &#x2191;</th>
+              <th>Retrans</th>
+              <th>RSTs</th>
+              <th>Zero Win</th>
+              <th>OOO</th>
+              <th>TLS</th>
+              <th>SNI</th>
+            </tr>
+          </thead>
+          <tbody id="flows-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Disruption events -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Disruption Events</div>
+        <div class="section-count" id="events-count"></div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" data-tab="all">All</div>
+        <div class="tab" data-tab="tcp">TCP</div>
+        <div class="tab" data-tab="tls">TLS</div>
+      </div>
+      <div style="display:grid; grid-template-columns: 70px 90px 80px 180px 180px 1fr; gap:8px; padding: 0 8px 6px; border-bottom: 1px solid var(--border); margin-bottom:4px;">
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Time</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Type</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Layer</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Source</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Destination</span>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Detail</span>
+      </div>
+      <div class="events-list" id="events-list"></div>
+      <div class="empty hidden" id="events-empty">No events for this filter</div>
+    </div>
+
+  </div><!-- /results -->
+</div><!-- /app -->
+
+<script>
+const $ = id => document.getElementById(id);
+
+// --- File drop & select ---
+const dropZone = $('drop-zone');
+const fileInput = $('pcap-file');
+const analyzeBtn = $('analyze-btn');
+const filenameDisplay = $('filename-display');
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => updateFileDisplay(fileInput.files[0]));
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) {
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    fileInput.files = dt.files;
+    updateFileDisplay(f);
+  }
+});
+
+function updateFileDisplay(file) {
+  if (!file) return;
+  filenameDisplay.textContent = `${file.name} (${fmt_bytes(file.size)})`;
+  analyzeBtn.disabled = false;
+}
+
+$('clear-btn').addEventListener('click', () => {
+  $('form').reset();
+  filenameDisplay.textContent = '';
+  analyzeBtn.disabled = true;
+  $('results').classList.add('hidden');
+  $('error-box').classList.remove('visible');
+  $('error-box').textContent = '';
+});
+
+// --- Form submit ---
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  analyzeBtn.disabled = true;
+  $('spinner').classList.add('active');
+  $('error-box').classList.remove('visible');
+  $('results').classList.add('hidden');
+
+  const fd = new FormData();
+  fd.append('pcap_file', file);
+  ['endpoint_ip', 'src_ip', 'dst_ip', 'port', 'protocol'].forEach(k => {
+    fd.append(k, $(`${k}`).value);
+  });
+
+  try {
+    const res = await fetch('/api/analyze', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderReport(data);
+  } catch (err) {
+    $('error-box').textContent = '⚠ ' + err.message;
+    $('error-box').classList.add('visible');
+  } finally {
+    analyzeBtn.disabled = false;
+    $('spinner').classList.remove('active');
+  }
+});
+
+// --- Render ---
+function renderReport(r) {
+  renderFilterBadges(r.filters_applied || {});
+  renderSummary(r.summary, r);
+  renderFlows(r.flows || []);
+  renderEvents(r.disruption_timeline || []);
+  $('results').classList.remove('hidden');
+}
+
+function renderFilterBadges(filters) {
+  const el = $('filter-badges');
+  el.innerHTML = '';
+  const labels = {
+    endpoint_ip: 'Endpoint IP', src_ip: 'Src IP', dst_ip: 'Dst IP', port: 'Port', protocol: 'Protocol'
+  };
+  Object.entries(filters).forEach(([k, v]) => {
+    if (!v) return;
+    const b = document.createElement('span');
+    b.className = 'filter-badge';
+    b.textContent = `${labels[k] || k}: ${v}`;
+    el.appendChild(b);
+  });
+}
+
+function renderSummary(s, r) {
+  const el = $('summary-cards');
+  const cards = [
+    { label: 'Flows', value: s.total_flows, cls: 'neutral' },
+    { label: 'Total Packets', value: r.total_packets, cls: 'neutral' },
+    { label: 'Capture Duration', value: r.capture_duration_s + 's', cls: 'neutral' },
+    { label: 'Retransmissions', value: (s.retransmissions || 0) + (s.fast_retransmissions || 0), cls: (s.retransmissions || 0) > 0 ? 'warning' : 'ok' },
+    { label: 'TCP Resets', value: s.tcp_resets, cls: s.tcp_resets > 0 ? 'critical' : 'ok' },
+    { label: 'Zero Windows', value: s.zero_windows, cls: s.zero_windows > 0 ? 'critical' : 'ok' },
+    { label: 'Out of Order', value: s.out_of_order, cls: s.out_of_order > 0 ? 'warning' : 'ok' },
+    { label: 'Dup ACKs', value: s.duplicate_acks, cls: 'info' },
+    { label: 'TLS Failures', value: s.tls_incomplete_handshakes, cls: s.tls_incomplete_handshakes > 0 ? 'critical' : 'ok' },
+    { label: 'TLS Alerts', value: s.tls_alerts, cls: s.tls_alerts > 0 ? 'warning' : 'ok' },
+    { label: 'TLS Complete', value: s.tls_handshakes_complete, cls: 'ok' },
+    { label: 'High RTT Events', value: s.high_rtt_events, cls: s.high_rtt_events > 0 ? 'warning' : 'ok' },
+  ];
+  el.innerHTML = cards.map(c =>
+    `<div class="card ${c.cls}">
+      <div class="card-value">${c.value ?? 0}</div>
+      <div class="card-label">${c.label}</div>
+    </div>`
+  ).join('');
+}
+
+function renderFlows(flows) {
+  const body = $('flows-body');
+  $('flows-count').textContent = `${flows.length} flows`;
+  if (!flows.length) {
+    body.innerHTML = '<tr><td colspan="13" class="empty">No flows found</td></tr>';
+    return;
+  }
+  body.innerHTML = flows.map(f => {
+    const dc = f.disruption_count || 0;
+    const dcCls = dc > 20 ? 'dc-high' : dc > 5 ? 'dc-med' : dc > 0 ? 'dc-low' : '';
+    const tlsBadge = f.has_tls ? `<span class="badge badge-tls">TLS</span>` : '';
+    const rstBadge = f.rst_seen ? `<span class="badge badge-critical">${f.rst_frames.length} RST</span>` : '';
+    const retransBadge = (f.retransmissions + f.fast_retransmissions) > 0
+      ? `<span class="badge badge-warning">${f.retransmissions + f.fast_retransmissions}</span>` : '0';
+    return `<tr>
+      <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
+      <td class="mono">${f.src_ip}<br><span style="color:var(--muted)">:${f.src_port}</span></td>
+      <td class="mono">${f.dst_ip}<br><span style="color:var(--muted)">:${f.dst_port}</span></td>
+      <td>${fmt_dur(f.duration_s)}</td>
+      <td>${f.total_packets}</td>
+      <td>${fmt_bytes(f.bytes_src_to_dst)}</td>
+      <td>${fmt_bytes(f.bytes_dst_to_src)}</td>
+      <td>${retransBadge}</td>
+      <td>${rstBadge || '0'}</td>
+      <td>${f.zero_windows > 0 ? `<span class="badge badge-critical">${f.zero_windows}</span>` : '0'}</td>
+      <td>${f.out_of_order > 0 ? `<span class="badge badge-warning">${f.out_of_order}</span>` : '0'}</td>
+      <td>${tlsBadge}</td>
+      <td style="color:var(--muted);font-size:11px">${f.tls_sni || ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+let allEvents = [];
+
+function renderEvents(events) {
+  allEvents = events;
+  renderEventsFiltered('all');
+}
+
+function renderEventsFiltered(tab) {
+  const list = $('events-list');
+  const empty = $('events-empty');
+  const countEl = $('events-count');
+
+  // Filter out info-only tls_handshake_complete from "all" and "tls" tabs unless nothing else
+  let filtered = allEvents.filter(e => {
+    if (tab === 'tcp') return e.layer === 'tcp';
+    if (tab === 'tls') return e.layer === 'tls';
+    return true;
+  });
+
+  countEl.textContent = `${filtered.length} events`;
+
+  if (!filtered.length) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  list.innerHTML = filtered.map(e => {
+    const sev = e.severity;
+    const badgeCls = sev === 'critical' ? 'badge-critical' : sev === 'warning' ? 'badge-warning' : sev === 'info' ? 'badge-info' : 'badge-info';
+    const layerBadge = e.layer === 'tls' ? 'badge-tls' : 'badge-tcp';
+    const ts = e.time_relative != null ? '+' + e.time_relative.toFixed(3) + 's' : '';
+    const evType = (e.event_type || e.type || '').replace(/_/g, ' ');
+    return `<div class="event-row">
+      <span class="ts mono">${ts}</span>
+      <span><span class="badge ${badgeCls}">${evType}</span></span>
+      <span><span class="badge ${layerBadge}">${e.layer?.toUpperCase()}</span></span>
+      <span class="ep mono">${e.src || ''}</span>
+      <span class="ep mono">${e.dst || ''}</span>
+      <span class="detail">${esc(e.detail || '')}</span>
+    </div>`;
+  }).join('');
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderEventsFiltered(tab.dataset.tab);
+  });
+});
+
+// --- Helpers ---
+function fmt_bytes(n) {
+  if (!n) return '0 B';
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
+}
+function fmt_dur(s) {
+  if (s == null) return '-';
+  if (s < 1) return (s * 1000).toFixed(0) + 'ms';
+  return s.toFixed(2) + 's';
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
