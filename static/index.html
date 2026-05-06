@@ -25,7 +25,7 @@
 
   /* Layout */
   .app { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; gap: 10px; }
   header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
   header .sub { color: var(--muted); font-size: 12px; }
 
@@ -39,35 +39,43 @@
   .upload-area input[type=file] { display: none; }
   .upload-area .icon { font-size: 32px; margin-bottom: 8px; }
   .upload-area .label { color: var(--muted); }
-  .upload-area .filename { color: var(--blue); font-weight: 600; margin-top: 6px; }
+  .upload-area .filename { color: var(--blue); font-weight: 600; margin-top: 6px; font-size: 12px; }
   .upload-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; }
 
-  /* Compare uploads side by side */
+  /* Compare uploads */
   .compare-uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 700px) { .compare-uploads { grid-template-columns: 1fr; } }
+
+  /* Batch upload */
+  .batch-upload-area { border: 2px dashed var(--border); border-radius: 6px; padding: 28px; text-align: center; cursor: pointer; transition: border-color .2s; margin-bottom: 16px; }
+  .batch-upload-area:hover, .batch-upload-area.drag { border-color: var(--purple); }
+  .batch-upload-area input[type=file] { display: none; }
+  .batch-file-list { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; }
+  .batch-file-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); background: var(--surface2); border-radius: 3px; padding: 4px 8px; }
+  .batch-file-item .fname { color: var(--blue); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* Filters */
   .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
   .filter-group label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 4px; }
   .filter-group input, .filter-group select {
     width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
-    color: var(--text); padding: 7px 10px; font-size: 13px; font-family: inherit;
-    transition: border-color .15s;
+    color: var(--text); padding: 7px 10px; font-size: 13px; font-family: inherit; transition: border-color .15s;
   }
   .filter-group input:focus, .filter-group select:focus { outline: none; border-color: var(--blue); }
   .filter-group select option { background: var(--surface); }
 
   /* Buttons */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 5px; border: none; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: 5px; border: none; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; transition: opacity .15s, border-color .15s, color .15s; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-primary { background: var(--blue); color: #fff; }
   .btn-primary:hover:not(:disabled) { opacity: 0.88; }
   .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
   .btn-secondary:hover:not(:disabled) { border-color: var(--blue); }
   .btn-sm { padding: 6px 14px; font-size: 12px; }
-  .btn-compare-toggle { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-  .btn-compare-toggle.active { color: var(--purple); border-color: var(--purple); }
-  .btn-compare-toggle:hover { border-color: var(--purple); color: var(--purple); }
+  .btn-mode { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .btn-mode:hover { color: var(--text); border-color: var(--border); }
+  .btn-mode.active-compare { color: var(--purple); border-color: var(--purple); }
+  .btn-mode.active-batch { color: var(--orange); border-color: var(--orange); }
 
   /* Spinner */
   .spinner { display: none; align-items: center; gap: 10px; color: var(--muted); margin-left: 14px; }
@@ -128,15 +136,13 @@
   .hidden { display: none !important; }
 
   /* Disruption count colors */
-  .disruption-count { font-weight: 700; }
-  .dc-high { color: var(--red); }
-  .dc-med { color: var(--yellow); }
-  .dc-low { color: var(--green); }
+  .dc-high { color: var(--red); font-weight: 700; }
+  .dc-med { color: var(--yellow); font-weight: 700; }
+  .dc-low { color: var(--green); font-weight: 700; }
 
-  /* Responsive events */
   @media (max-width: 700px) {
     .event-row { grid-template-columns: 60px 1fr; }
-    .event-row .ep, .event-row .layer-badge { display: none; }
+    .event-row .ep { display: none; }
   }
 
   /* Section header */
@@ -150,7 +156,7 @@
   /* Compare results */
   .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media (max-width: 900px) { .compare-grid { grid-template-columns: 1fr; } }
-  .compare-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--purple); margin-bottom: 10px; }
+  .compare-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
   .diff-panel { background: #1a1430; border: 1px solid #3a2860; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
   .diff-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #2a2040; font-size: 12px; }
   .diff-row:last-child { border-bottom: none; }
@@ -162,10 +168,39 @@
   .diff-better { background: #0d2e1e; color: var(--green); }
   .diff-same { background: var(--surface2); color: var(--muted); }
 
-  /* AI Diagnosis panel */
+  /* Batch results */
+  .batch-file-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .batch-file-header {
+    display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+    cursor: pointer; transition: background .15s; user-select: none;
+  }
+  .batch-file-header:hover { background: var(--surface2); }
+  .batch-file-rank { font-size: 18px; font-weight: 700; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0; }
+  .batch-file-name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .batch-file-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .batch-stat { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .batch-stat span { font-weight: 700; }
+  .batch-stat.red span { color: var(--red); }
+  .batch-stat.yellow span { color: var(--yellow); }
+  .batch-stat.green span { color: var(--green); }
+  .batch-stat.muted span { color: var(--text); }
+  .batch-chevron { color: var(--muted); font-size: 16px; transition: transform .2s; flex-shrink: 0; }
+  .batch-chevron.open { transform: rotate(180deg); }
+  .score-pill { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .score-high { background: #4a1010; color: var(--red); }
+  .score-med { background: #3a2e10; color: var(--yellow); }
+  .score-low { background: #0d2e1e; color: var(--green); }
+  .score-zero { background: var(--surface2); color: var(--muted); }
+  .batch-file-body { border-top: 1px solid var(--border); padding: 18px; }
+
+  /* AI Diagnosis */
   .ai-output { white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.7; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-top: 14px; }
   .ai-note { font-size: 11px; color: var(--muted); margin-top: 10px; }
   .ai-header { display: flex; align-items: center; gap: 10px; }
+
+  /* Events header row */
+  .events-hdr { display: grid; grid-template-columns: 70px 90px 80px 180px 180px 1fr; gap: 8px; padding: 0 8px 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .events-hdr span { font-size: 10px; color: var(--muted); text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -175,9 +210,10 @@
       <h1>&#x1F50D; PCAP Analyzer</h1>
       <div class="sub">Upload a capture file to find network, TCP, and TLS disruptions</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <button class="btn btn-secondary btn-sm hidden" id="export-btn" onclick="exportReport()">&#x2B73; Save Report</button>
-      <button class="btn btn-compare-toggle btn-sm" id="compare-toggle" onclick="toggleCompare()">&#x229E; Compare</button>
+      <button class="btn btn-mode btn-sm" id="compare-btn" onclick="activateMode('compare')">&#x229E; Compare</button>
+      <button class="btn btn-mode btn-sm" id="batch-btn" onclick="activateMode('batch')">&#x2630; Batch</button>
     </div>
   </header>
 
@@ -186,7 +222,7 @@
     <div class="panel-title" id="panel-title">Upload &amp; Filter</div>
     <form id="form">
 
-      <!-- Single file upload -->
+      <!-- Single upload -->
       <div id="single-upload">
         <div class="upload-area" id="drop-zone">
           <input type="file" id="pcap-file" accept=".pcap,.pcapng,.cap">
@@ -196,7 +232,7 @@
         </div>
       </div>
 
-      <!-- Compare: two file uploads -->
+      <!-- Compare: two files -->
       <div id="compare-upload" class="compare-uploads hidden">
         <div>
           <div class="upload-label" style="color:var(--blue)">File A</div>
@@ -218,7 +254,18 @@
         </div>
       </div>
 
-      <!-- Quick presets + filters -->
+      <!-- Batch: multiple files -->
+      <div id="batch-upload" class="hidden">
+        <div class="batch-upload-area" id="batch-drop-zone">
+          <input type="file" id="batch-files" name="pcap_files" accept=".pcap,.pcapng,.cap" multiple>
+          <div class="icon">&#x1F5C2;</div>
+          <div class="label">Drop multiple .pcap files here or <strong style="color:var(--orange)">click to browse</strong></div>
+          <div class="label" style="font-size:11px;margin-top:4px">All files are analyzed with the same filters</div>
+        </div>
+        <div class="batch-file-list" id="batch-file-list"></div>
+      </div>
+
+      <!-- Presets + filters -->
       <div class="filters">
         <div class="filter-group">
           <label>Quick Preset</label>
@@ -260,18 +307,17 @@
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <button type="submit" class="btn btn-primary" id="analyze-btn" disabled>&#x25B6; Analyze</button>
         <button type="button" class="btn btn-secondary" id="clear-btn">&#x2715; Clear</button>
-        <span class="spinner" id="spinner"><span class="spin"></span> <span id="spinner-label">Analyzing&hellip;</span></span>
+        <span class="spinner" id="spinner"><span class="spin"></span><span id="spinner-label">Analyzing&hellip;</span></span>
       </div>
     </form>
   </div>
 
-  <!-- Error -->
   <div class="error-box" id="error-box"></div>
 
-  <!-- Single file results -->
+  <!-- Single results -->
   <div id="results" class="hidden">
     <div id="filter-badges" style="margin-bottom:12px;"></div>
 
@@ -286,14 +332,12 @@
         <div class="section-count" id="flows-count"></div>
       </div>
       <div class="table-wrap">
-        <table id="flows-table">
-          <thead>
-            <tr>
-              <th>Stream</th><th>Source</th><th>Destination</th><th>Duration</th>
-              <th>Pkts</th><th>Bytes &#x2193;</th><th>Bytes &#x2191;</th>
-              <th>Retrans</th><th>RSTs</th><th>Zero Win</th><th>OOO</th><th>TLS</th><th>SNI</th>
-            </tr>
-          </thead>
+        <table>
+          <thead><tr>
+            <th>Stream</th><th>Source</th><th>Destination</th><th>Duration</th>
+            <th>Pkts</th><th>Bytes &#x2193;</th><th>Bytes &#x2191;</th>
+            <th>Retrans</th><th>RSTs</th><th>Zero Win</th><th>OOO</th><th>TLS</th><th>SNI</th>
+          </tr></thead>
           <tbody id="flows-body"></tbody>
         </table>
       </div>
@@ -309,24 +353,18 @@
         <div class="tab" data-tab="tcp">TCP</div>
         <div class="tab" data-tab="tls">TLS</div>
       </div>
-      <div style="display:grid;grid-template-columns:70px 90px 80px 180px 180px 1fr;gap:8px;padding:0 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;">
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Time</span>
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Type</span>
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Layer</span>
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Source</span>
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Destination</span>
-        <span style="font-size:10px;color:var(--muted);text-transform:uppercase">Detail</span>
+      <div class="events-hdr">
+        <span>Time</span><span>Type</span><span>Layer</span><span>Source</span><span>Destination</span><span>Detail</span>
       </div>
       <div class="events-list" id="events-list"></div>
       <div class="empty hidden" id="events-empty">No events for this filter</div>
     </div>
 
-    <!-- AI Diagnosis -->
     <div class="panel" id="ai-panel">
       <div class="ai-header">
         <div class="panel-title" style="margin-bottom:0">AI Diagnosis</div>
         <button class="btn btn-secondary btn-sm" id="ai-btn" onclick="generateAIDiagnosis()">&#x2728; Generate</button>
-        <span class="spinner" id="ai-spinner"><span class="spin"></span> Thinking&hellip;</span>
+        <span class="spinner" id="ai-spinner"><span class="spin"></span>Thinking&hellip;</span>
       </div>
       <div id="ai-result"></div>
     </div>
@@ -335,11 +373,21 @@
   <!-- Compare results -->
   <div id="compare-results" class="hidden">
     <div class="diff-panel" id="diff-summary"></div>
-
     <div class="compare-grid">
       <div id="compare-col-a"></div>
       <div id="compare-col-b"></div>
     </div>
+  </div>
+
+  <!-- Batch results -->
+  <div id="batch-results" class="hidden">
+    <div class="panel" style="padding:14px 18px;margin-bottom:16px;">
+      <div class="section-header" style="margin-bottom:0">
+        <div class="section-title">Batch Overview</div>
+        <div class="section-count" id="batch-count"></div>
+      </div>
+    </div>
+    <div id="batch-cards"></div>
   </div>
 
 </div><!-- /app -->
@@ -348,9 +396,54 @@
 const $ = id => document.getElementById(id);
 
 // ─── State ────────────────────────────────────────────────
+let currentMode = 'single'; // 'single' | 'compare' | 'batch'
 let currentReport = null;
-let compareMode = false;
 let allEvents = [];
+let batchReports = [];
+
+// ─── Mode management ──────────────────────────────────────
+function activateMode(mode) {
+  if (currentMode === mode) {
+    // Toggle off — return to single
+    mode = 'single';
+  }
+  currentMode = mode;
+
+  // Reset button states
+  $('compare-btn').className = 'btn btn-mode btn-sm';
+  $('batch-btn').className = 'btn btn-mode btn-sm';
+
+  // Show/hide upload areas
+  $('single-upload').classList.toggle('hidden', mode !== 'single');
+  $('compare-upload').classList.toggle('hidden', mode !== 'compare');
+  $('batch-upload').classList.toggle('hidden', mode !== 'batch');
+
+  // Mode-specific state
+  if (mode === 'compare') {
+    $('compare-btn').classList.add('active-compare');
+    $('panel-title').textContent = 'Compare Two Captures';
+    $('analyze-btn').textContent = '⧉ Compare';
+  } else if (mode === 'batch') {
+    $('batch-btn').classList.add('active-batch');
+    $('panel-title').textContent = 'Batch Analyze';
+    $('analyze-btn').textContent = '⊞ Batch Analyze';
+  } else {
+    $('panel-title').textContent = 'Upload & Filter';
+    $('analyze-btn').textContent = '▶ Analyze';
+  }
+
+  updateAnalyzeEnabled();
+}
+
+function updateAnalyzeEnabled() {
+  if (currentMode === 'compare') {
+    $('analyze-btn').disabled = !($('pcap-file-a').files[0] && $('pcap-file-b').files[0]);
+  } else if (currentMode === 'batch') {
+    $('analyze-btn').disabled = !($('batch-files').files.length > 0);
+  } else {
+    $('analyze-btn').disabled = !$('pcap-file').files[0];
+  }
+}
 
 // ─── Presets ──────────────────────────────────────────────
 const PRESETS = {
@@ -370,52 +463,50 @@ function applyPreset(key) {
   $('protocol').value = p.protocol || '';
 }
 
-// ─── Compare toggle ───────────────────────────────────────
-function toggleCompare() {
-  compareMode = !compareMode;
-  const toggle = $('compare-toggle');
-  toggle.classList.toggle('active', compareMode);
-  $('single-upload').classList.toggle('hidden', compareMode);
-  $('compare-upload').classList.toggle('hidden', !compareMode);
-  $('analyze-btn').textContent = compareMode ? '⧉ Compare' : '▶ Analyze';
-  $('panel-title').textContent = compareMode ? 'Compare Two Captures' : 'Upload & Filter';
-  updateAnalyzeEnabled();
-}
+// ─── File handling — single ───────────────────────────────
+setupDropZone('drop-zone', 'pcap-file', 'filename-display', 'var(--blue)');
 
-// ─── File drop & select — single ──────────────────────────
-const dropZone = $('drop-zone');
-const fileInput = $('pcap-file');
+// ─── File handling — compare ──────────────────────────────
+['a', 'b'].forEach(s => setupDropZone(`drop-zone-${s}`, `pcap-file-${s}`, `filename-display-${s}`, s === 'a' ? 'var(--blue)' : 'var(--purple)'));
 
-dropZone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', () => { updateFileDisplay(fileInput.files[0], 'filename-display'); updateAnalyzeEnabled(); });
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag');
-  setFile(e.dataTransfer.files[0], fileInput, 'filename-display');
+// ─── File handling — batch ────────────────────────────────
+const batchDz = $('batch-drop-zone');
+const batchInput = $('batch-files');
+batchDz.addEventListener('click', () => batchInput.click());
+batchInput.addEventListener('change', () => { updateBatchFileList(); updateAnalyzeEnabled(); });
+batchDz.addEventListener('dragover', e => { e.preventDefault(); batchDz.classList.add('drag'); });
+batchDz.addEventListener('dragleave', () => batchDz.classList.remove('drag'));
+batchDz.addEventListener('drop', e => {
+  e.preventDefault(); batchDz.classList.remove('drag');
+  const dt2 = new DataTransfer();
+  Array.from(e.dataTransfer.files).forEach(f => dt2.items.add(f));
+  batchInput.files = dt2.files;
+  updateBatchFileList(); updateAnalyzeEnabled();
 });
 
-// ─── File drop & select — compare A & B ───────────────────
-['a', 'b'].forEach(side => {
-  const dz = $(`drop-zone-${side}`);
-  const fi = $(`pcap-file-${side}`);
+function updateBatchFileList() {
+  const files = Array.from(batchInput.files);
+  const list = $('batch-file-list');
+  list.innerHTML = files.map(f =>
+    `<div class="batch-file-item"><span class="fname">${esc(f.name)}</span><span>${fmt_bytes(f.size)}</span></div>`
+  ).join('');
+}
+
+function setupDropZone(dzId, inputId, displayId, color) {
+  const dz = $(dzId), fi = $(inputId);
   dz.addEventListener('click', () => fi.click());
-  fi.addEventListener('change', () => { updateFileDisplay(fi.files[0], `filename-display-${side}`); updateAnalyzeEnabled(); });
+  fi.addEventListener('change', () => { updateFileDisplay(fi.files[0], displayId); updateAnalyzeEnabled(); });
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
   dz.addEventListener('drop', e => {
     e.preventDefault(); dz.classList.remove('drag');
-    setFile(e.dataTransfer.files[0], fi, `filename-display-${side}`);
+    if (!e.dataTransfer.files[0]) return;
+    const dt = new DataTransfer();
+    dt.items.add(e.dataTransfer.files[0]);
+    fi.files = dt.files;
+    updateFileDisplay(fi.files[0], displayId);
+    updateAnalyzeEnabled();
   });
-});
-
-function setFile(file, input, displayId) {
-  if (!file) return;
-  const dt = new DataTransfer();
-  dt.items.add(file);
-  input.files = dt.files;
-  updateFileDisplay(file, displayId);
-  updateAnalyzeEnabled();
 }
 
 function updateFileDisplay(file, displayId) {
@@ -423,38 +514,27 @@ function updateFileDisplay(file, displayId) {
   $(displayId).textContent = `${file.name} (${fmt_bytes(file.size)})`;
 }
 
-function updateAnalyzeEnabled() {
-  if (compareMode) {
-    $('analyze-btn').disabled = !($('pcap-file-a').files[0] && $('pcap-file-b').files[0]);
-  } else {
-    $('analyze-btn').disabled = !$('pcap-file').files[0];
-  }
-}
-
 // ─── Clear ────────────────────────────────────────────────
 $('clear-btn').addEventListener('click', () => {
   $('form').reset();
   ['filename-display', 'filename-display-a', 'filename-display-b'].forEach(id => $(id).textContent = '');
+  $('batch-file-list').innerHTML = '';
   $('analyze-btn').disabled = true;
-  $('results').classList.add('hidden');
-  $('compare-results').classList.add('hidden');
+  ['results', 'compare-results', 'batch-results'].forEach(id => $(id).classList.add('hidden'));
   $('export-btn').classList.add('hidden');
   $('error-box').classList.remove('visible');
   $('ai-result').innerHTML = '';
-  currentReport = null;
-  allEvents = [];
+  currentReport = null; allEvents = []; batchReports = [];
 });
 
-// ─── Form submit ──────────────────────────────────────────
+// ─── Submit ───────────────────────────────────────────────
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
   const btn = $('analyze-btn');
   btn.disabled = true;
   $('spinner').classList.add('active');
-  $('spinner-label').textContent = compareMode ? 'Comparing…' : 'Analyzing…';
   $('error-box').classList.remove('visible');
-  $('results').classList.add('hidden');
-  $('compare-results').classList.add('hidden');
+  ['results', 'compare-results', 'batch-results'].forEach(id => $(id).classList.add('hidden'));
   $('export-btn').classList.add('hidden');
   $('ai-result').innerHTML = '';
 
@@ -462,18 +542,27 @@ $('form').addEventListener('submit', async e => {
   ['endpoint_ip', 'src_ip', 'dst_ip', 'port', 'protocol'].forEach(k => fd.append(k, $(k).value));
 
   try {
-    let data;
-    if (compareMode) {
+    if (currentMode === 'batch') {
+      $('spinner-label').textContent = `Analyzing ${batchInput.files.length} files…`;
+      Array.from(batchInput.files).forEach(f => fd.append('pcap_files', f));
+      const res = await fetch('/api/batch', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      batchReports = data.reports || [];
+      renderBatch(batchReports);
+    } else if (currentMode === 'compare') {
+      $('spinner-label').textContent = 'Comparing…';
       fd.append('pcap_file_a', $('pcap-file-a').files[0]);
       fd.append('pcap_file_b', $('pcap-file-b').files[0]);
       const res = await fetch('/api/compare', { method: 'POST', body: fd });
-      data = await res.json();
+      const data = await res.json();
       if (data.error) throw new Error(data.error);
       renderCompare(data);
     } else {
+      $('spinner-label').textContent = 'Analyzing…';
       fd.append('pcap_file', $('pcap-file').files[0]);
       const res = await fetch('/api/analyze', { method: 'POST', body: fd });
-      data = await res.json();
+      const data = await res.json();
       if (data.error) throw new Error(data.error);
       currentReport = data;
       renderReport(data);
@@ -485,6 +574,7 @@ $('form').addEventListener('submit', async e => {
   } finally {
     btn.disabled = false;
     $('spinner').classList.remove('active');
+    updateAnalyzeEnabled();
   }
 });
 
@@ -526,27 +616,22 @@ function renderSummary(s, r, targetId) {
     { label: 'High RTT Events', value: s.high_rtt_events, cls: s.high_rtt_events > 0 ? 'warning' : 'ok' },
   ];
   $(targetId).innerHTML = cards.map(c =>
-    `<div class="card ${c.cls}">
-      <div class="card-value">${c.value ?? 0}</div>
-      <div class="card-label">${c.label}</div>
-    </div>`
+    `<div class="card ${c.cls}"><div class="card-value">${c.value ?? 0}</div><div class="card-label">${c.label}</div></div>`
   ).join('');
 }
 
 function renderFlows(flows, bodyId, countId) {
-  const body = $(bodyId);
   if (countId) $(countId).textContent = `${flows.length} flows`;
+  const body = $(bodyId);
   if (!flows.length) {
     body.innerHTML = '<tr><td colspan="13" class="empty">No flows found</td></tr>';
     return;
   }
   body.innerHTML = flows.map(f => {
-    const dc = f.disruption_count || 0;
-    const dcCls = dc > 20 ? 'dc-high' : dc > 5 ? 'dc-med' : dc > 0 ? 'dc-low' : '';
-    const tlsBadge = f.has_tls ? `<span class="badge badge-tls">TLS</span>` : '';
-    const rstBadge = f.rst_seen ? `<span class="badge badge-critical">${(f.rst_frames||[]).length} RST</span>` : '';
-    const retrans = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
-    const retransBadge = retrans > 0 ? `<span class="badge badge-warning">${retrans}</span>` : '0';
+    const rt = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
+    const rst = (f.rst_frames || []).length;
+    const retransBadge = rt > 0 ? `<span class="badge badge-warning">${rt}</span>` : '0';
+    const rstBadge = rst > 0 ? `<span class="badge badge-critical">${rst} RST</span>` : '0';
     return `<tr>
       <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
       <td class="mono">${f.src_ip}<br><span style="color:var(--muted)">:${f.src_port}</span></td>
@@ -556,10 +641,10 @@ function renderFlows(flows, bodyId, countId) {
       <td>${fmt_bytes(f.bytes_src_to_dst)}</td>
       <td>${fmt_bytes(f.bytes_dst_to_src)}</td>
       <td>${retransBadge}</td>
-      <td>${rstBadge || '0'}</td>
+      <td>${rstBadge}</td>
       <td>${f.zero_windows > 0 ? `<span class="badge badge-critical">${f.zero_windows}</span>` : '0'}</td>
       <td>${f.out_of_order > 0 ? `<span class="badge badge-warning">${f.out_of_order}</span>` : '0'}</td>
-      <td>${tlsBadge}</td>
+      <td>${f.has_tls ? '<span class="badge badge-tls">TLS</span>' : ''}</td>
       <td style="color:var(--muted);font-size:11px">${f.tls_sni || ''}</td>
     </tr>`;
   }).join('');
@@ -571,21 +656,19 @@ function renderEvents(events) {
 }
 
 function renderEventsFiltered(tab) {
-  const list = $('events-list');
-  const empty = $('events-empty');
-  const countEl = $('events-count');
-  const filtered = allEvents.filter(e => {
-    if (tab === 'tcp') return e.layer === 'tcp';
-    if (tab === 'tls') return e.layer === 'tls';
-    return true;
-  });
-  countEl.textContent = `${filtered.length} events`;
+  renderEventsTo(allEvents, tab, 'events-list', 'events-empty', 'events-count');
+}
+
+function renderEventsTo(events, tab, listId, emptyId, countId) {
+  const filtered = events.filter(e => tab === 'tcp' ? e.layer === 'tcp' : tab === 'tls' ? e.layer === 'tls' : true);
+  if (countId) $(countId).textContent = `${filtered.length} events`;
+  const list = $(listId), empty = emptyId ? $(emptyId) : null;
   if (!filtered.length) {
     list.innerHTML = '';
-    empty.classList.remove('hidden');
+    if (empty) empty.classList.remove('hidden');
     return;
   }
-  empty.classList.add('hidden');
+  if (empty) empty.classList.add('hidden');
   list.innerHTML = filtered.map(e => {
     const sev = e.severity;
     const badgeCls = sev === 'critical' ? 'badge-critical' : sev === 'warning' ? 'badge-warning' : 'badge-info';
@@ -603,7 +686,7 @@ function renderEventsFiltered(tab) {
   }).join('');
 }
 
-// Tab switching
+// Events tab switching — single mode
 $('events-tabs').addEventListener('click', e => {
   const tab = e.target.closest('.tab');
   if (!tab) return;
@@ -612,19 +695,141 @@ $('events-tabs').addEventListener('click', e => {
   renderEventsFiltered(tab.dataset.tab);
 });
 
+// ─── Render — batch ───────────────────────────────────────
+function renderBatch(reports) {
+  $('batch-count').textContent = `${reports.length} files analyzed`;
+  const container = $('batch-cards');
+  container.innerHTML = '';
+
+  reports.forEach((r, idx) => {
+    const s = r.summary || {};
+    const score = r._disruption_score || 0;
+    const retrans = (s.retransmissions || 0) + (s.fast_retransmissions || 0);
+    const rst = s.tcp_resets || 0;
+    const zw = s.zero_windows || 0;
+    const tlsFail = s.tls_incomplete_handshakes || 0;
+    const tlsOk = s.tls_handshakes_complete || 0;
+
+    const scoreCls = score > 30 ? 'score-high' : score > 10 ? 'score-med' : score > 0 ? 'score-low' : 'score-zero';
+
+    const card = document.createElement('div');
+    card.className = 'batch-file-card';
+    card.innerHTML = `
+      <div class="batch-file-header" onclick="toggleBatchCard(${idx})">
+        <div class="batch-file-rank">${idx + 1}</div>
+        <div class="batch-file-name" title="${esc(r.pcap_filename || '')}">${esc(r.pcap_filename || 'unknown')}</div>
+        <div class="batch-file-stats">
+          <div class="batch-stat ${retrans > 0 ? 'yellow' : 'muted'}"><span>${retrans}</span> retrans</div>
+          <div class="batch-stat ${rst > 0 ? 'red' : 'muted'}"><span>${rst}</span> RSTs</div>
+          <div class="batch-stat ${zw > 0 ? 'red' : 'muted'}"><span>${zw}</span> zero-win</div>
+          <div class="batch-stat ${tlsFail > 0 ? 'red' : 'muted'}"><span>${tlsFail}</span> TLS fail</div>
+          <div class="batch-stat green"><span>${tlsOk}</span> TLS ok</div>
+          <div class="batch-stat muted"><span>${s.total_flows || 0}</span> flows</div>
+          <div class="batch-stat muted"><span>${r.total_packets || 0}</span> pkts</div>
+        </div>
+        <span class="score-pill ${scoreCls}">score ${score}</span>
+        <span class="batch-chevron" id="chevron-${idx}">&#x2304;</span>
+      </div>
+      <div class="batch-file-body hidden" id="batch-body-${idx}"></div>`;
+    container.appendChild(card);
+  });
+
+  $('batch-results').classList.remove('hidden');
+
+  // Auto-expand the top file if it has disruptions
+  if (reports.length > 0 && (reports[0]._disruption_score || 0) > 0) {
+    toggleBatchCard(0);
+  }
+}
+
+function toggleBatchCard(idx) {
+  const body = $(`batch-body-${idx}`);
+  const chevron = $(`chevron-${idx}`);
+  const isHidden = body.classList.contains('hidden');
+
+  body.classList.toggle('hidden', !isHidden);
+  chevron.classList.toggle('open', isHidden);
+
+  // Lazy render on first expand
+  if (isHidden && !body.dataset.rendered) {
+    body.dataset.rendered = '1';
+    renderBatchDetail(batchReports[idx], body);
+  }
+}
+
+function renderBatchDetail(r, container) {
+  const uid = Math.random().toString(36).slice(2, 8);
+  const events = r.disruption_timeline || [];
+
+  container.innerHTML = `
+    <div class="panel" style="margin-bottom:14px;padding:14px">
+      <div class="panel-title">Summary</div>
+      <div class="cards" id="bc-${uid}"></div>
+    </div>
+    <div class="panel" style="margin-bottom:14px;padding:14px">
+      <div class="section-title" style="margin-bottom:10px">Flows (${(r.flows||[]).length})</div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Stream</th><th>Source</th><th>Destination</th><th>Pkts</th>
+          <th>Retrans</th><th>RSTs</th><th>Zero Win</th><th>TLS</th><th>SNI</th>
+        </tr></thead>
+        <tbody id="bf-${uid}"></tbody>
+      </table></div>
+    </div>
+    <div class="panel" style="padding:14px">
+      <div class="tabs" id="bt-${uid}">
+        <div class="tab active" data-tab="all">All (${events.length})</div>
+        <div class="tab" data-tab="tcp">TCP</div>
+        <div class="tab" data-tab="tls">TLS</div>
+      </div>
+      <div class="events-hdr"><span>Time</span><span>Type</span><span>Layer</span><span>Source</span><span>Destination</span><span>Detail</span></div>
+      <div class="events-list" id="be-${uid}" style="max-height:300px"></div>
+      <div class="empty hidden" id="bee-${uid}">No events</div>
+    </div>`;
+
+  renderSummary(r.summary || {}, r, `bc-${uid}`);
+
+  // Compact flows for batch detail
+  const tbody = $(`bf-${uid}`);
+  const flows = (r.flows || []).slice(0, 30);
+  tbody.innerHTML = flows.length ? flows.map(f => {
+    const rt = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
+    const rst = (f.rst_frames || []).length;
+    return `<tr>
+      <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
+      <td class="mono" style="font-size:11px">${f.src_ip}:${f.src_port}</td>
+      <td class="mono" style="font-size:11px">${f.dst_ip}:${f.dst_port}</td>
+      <td>${f.total_packets}</td>
+      <td>${rt > 0 ? `<span class="badge badge-warning">${rt}</span>` : '0'}</td>
+      <td>${rst > 0 ? `<span class="badge badge-critical">${rst}</span>` : '0'}</td>
+      <td>${f.zero_windows > 0 ? `<span class="badge badge-critical">${f.zero_windows}</span>` : '0'}</td>
+      <td>${f.has_tls ? '<span class="badge badge-tls">TLS</span>' : ''}</td>
+      <td style="font-size:11px;color:var(--muted)">${f.tls_sni || ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="9" class="empty">No flows</td></tr>';
+
+  renderEventsTo(events, 'all', `be-${uid}`, `bee-${uid}`, null);
+
+  // Tab switching for this card's events panel
+  $(`bt-${uid}`).addEventListener('click', ev => {
+    const tab = ev.target.closest('.tab');
+    if (!tab) return;
+    $(`bt-${uid}`).querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderEventsTo(events, tab.dataset.tab, `be-${uid}`, `bee-${uid}`, null);
+  });
+}
+
 // ─── Render — compare ─────────────────────────────────────
 function renderCompare(data) {
-  const { report_a, report_b } = data;
-  renderDiff(report_a, report_b);
-  renderCompareCol(report_a, 'compare-col-a', 'A — ' + (report_a.pcap_filename || 'File A'), 'var(--blue)');
-  renderCompareCol(report_b, 'compare-col-b', 'B — ' + (report_b.pcap_filename || 'File B'), 'var(--purple)');
+  renderDiff(data.report_a, data.report_b);
+  renderCompareCol(data.report_a, 'compare-col-a', 'A — ' + (data.report_a.pcap_filename || 'File A'), 'var(--blue)');
+  renderCompareCol(data.report_b, 'compare-col-b', 'B — ' + (data.report_b.pcap_filename || 'File B'), 'var(--purple)');
   $('compare-results').classList.remove('hidden');
 }
 
 function renderCompareCol(r, colId, label, color) {
   const col = $(colId);
-  const sa = r.summary || {};
-  const retrans = (sa.retransmissions || 0) + (sa.fast_retransmissions || 0);
   col.innerHTML = `
     <div class="compare-label" style="color:${color}">${esc(label)}</div>
     <div class="panel" style="padding:14px">
@@ -632,98 +837,68 @@ function renderCompareCol(r, colId, label, color) {
       <div class="cards" id="cards-${colId}"></div>
     </div>
     <div class="panel" style="padding:14px">
-      <div class="section-header">
-        <div class="section-title">Flows</div>
-        <div class="section-count">${(r.flows||[]).length} flows</div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Stream</th><th>Src</th><th>Dst</th><th>Pkts</th><th>Retrans</th><th>RSTs</th><th>TLS</th><th>SNI</th>
-          </tr></thead>
-          <tbody id="tbody-${colId}"></tbody>
-        </table>
-      </div>
+      <div class="section-title" style="margin-bottom:8px">Flows</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Stream</th><th>Src</th><th>Dst</th><th>Pkts</th><th>Retrans</th><th>RSTs</th><th>TLS</th><th>SNI</th></tr></thead>
+        <tbody id="tbody-${colId}"></tbody>
+      </table></div>
     </div>`;
-
-  renderSummary(sa, r, `cards-${colId}`);
-
-  // Compact flows table for compare view
+  renderSummary(r.summary || {}, r, `cards-${colId}`);
   const body = $(`tbody-${colId}`);
   const flows = r.flows || [];
-  if (!flows.length) {
-    body.innerHTML = '<tr><td colspan="8" class="empty">No flows</td></tr>';
-  } else {
-    body.innerHTML = flows.map(f => {
-      const rt = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
-      const rst = (f.rst_frames || []).length;
-      return `<tr>
-        <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
-        <td class="mono" style="font-size:11px">${f.src_ip}:${f.src_port}</td>
-        <td class="mono" style="font-size:11px">${f.dst_ip}:${f.dst_port}</td>
-        <td>${f.total_packets}</td>
-        <td>${rt > 0 ? `<span class="badge badge-warning">${rt}</span>` : '0'}</td>
-        <td>${rst > 0 ? `<span class="badge badge-critical">${rst}</span>` : '0'}</td>
-        <td>${f.has_tls ? '<span class="badge badge-tls">TLS</span>' : ''}</td>
-        <td style="font-size:11px;color:var(--muted)">${f.tls_sni || ''}</td>
-      </tr>`;
-    }).join('');
-  }
+  body.innerHTML = flows.length ? flows.map(f => {
+    const rt = (f.retransmissions || 0) + (f.fast_retransmissions || 0);
+    const rst = (f.rst_frames || []).length;
+    return `<tr>
+      <td class="mono" style="color:var(--muted)">${f.stream_id}</td>
+      <td class="mono" style="font-size:11px">${f.src_ip}:${f.src_port}</td>
+      <td class="mono" style="font-size:11px">${f.dst_ip}:${f.dst_port}</td>
+      <td>${f.total_packets}</td>
+      <td>${rt > 0 ? `<span class="badge badge-warning">${rt}</span>` : '0'}</td>
+      <td>${rst > 0 ? `<span class="badge badge-critical">${rst}</span>` : '0'}</td>
+      <td>${f.has_tls ? '<span class="badge badge-tls">TLS</span>' : ''}</td>
+      <td style="font-size:11px;color:var(--muted)">${f.tls_sni || ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty">No flows</td></tr>';
 }
 
 function renderDiff(a, b) {
   const sa = a.summary || {}, sb = b.summary || {};
-  const fa = a.pcap_filename || 'File A', fb = b.pcap_filename || 'File B';
-
-  function diffRow(label, va, vb, lowerIsBetter) {
-    const numA = typeof va === 'number' ? va : 0;
-    const numB = typeof vb === 'number' ? vb : 0;
-    let tag = '';
-    if (numA !== numB) {
-      const aWorse = lowerIsBetter ? numA > numB : numA < numB;
-      tag = `<span class="diff-winner ${aWorse ? 'diff-worse' : 'diff-better'}">${aWorse ? 'A worse' : 'A better'}</span>`;
-    } else {
-      tag = `<span class="diff-winner diff-same">equal</span>`;
-    }
-    return `<div class="diff-row">
-      <span class="diff-label">${label}</span>
-      <span class="diff-a">${va}</span>
-      <span class="diff-b">${vb}</span>
-      ${tag}
-    </div>`;
-  }
-
   const retA = (sa.retransmissions || 0) + (sa.fast_retransmissions || 0);
   const retB = (sb.retransmissions || 0) + (sb.fast_retransmissions || 0);
-
+  function diffRow(label, va, vb, lowerBetter) {
+    const numA = +va || 0, numB = +vb || 0;
+    const tag = numA === numB
+      ? `<span class="diff-winner diff-same">equal</span>`
+      : `<span class="diff-winner ${(lowerBetter ? numA > numB : numA < numB) ? 'diff-worse' : 'diff-better'}">${(lowerBetter ? numA > numB : numA < numB) ? 'A worse' : 'A better'}</span>`;
+    return `<div class="diff-row"><span class="diff-label">${label}</span><span class="diff-a">${va}</span><span class="diff-b">${vb}</span>${tag}</div>`;
+  }
   $('diff-summary').innerHTML = `
-    <div class="panel-title" style="margin-bottom:12px">Comparison: <span style="color:var(--blue)">${esc(fa)}</span> vs <span style="color:var(--purple)">${esc(fb)}</span></div>
-    <div style="display:grid;grid-template-columns:1fr 100px 100px 100px;gap:8px;margin-bottom:8px;">
+    <div class="panel-title" style="margin-bottom:12px">
+      <span style="color:var(--blue)">${esc(a.pcap_filename||'File A')}</span>
+      vs <span style="color:var(--purple)">${esc(b.pcap_filename||'File B')}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 90px 90px 90px;gap:8px;margin-bottom:6px;">
       <span></span>
-      <span style="font-size:10px;color:var(--blue);text-transform:uppercase;font-weight:700">File A</span>
-      <span style="font-size:10px;color:var(--purple);text-transform:uppercase;font-weight:700">File B</span>
+      <span style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase">File A</span>
+      <span style="font-size:10px;color:var(--purple);font-weight:700;text-transform:uppercase">File B</span>
       <span></span>
     </div>
     ${diffRow('Retransmissions', retA, retB, true)}
-    ${diffRow('TCP Resets', sa.tcp_resets || 0, sb.tcp_resets || 0, true)}
-    ${diffRow('Zero Windows', sa.zero_windows || 0, sb.zero_windows || 0, true)}
-    ${diffRow('Out of Order', sa.out_of_order || 0, sb.out_of_order || 0, true)}
-    ${diffRow('TLS Failures', sa.tls_incomplete_handshakes || 0, sb.tls_incomplete_handshakes || 0, true)}
-    ${diffRow('TLS Complete', sa.tls_handshakes_complete || 0, sb.tls_handshakes_complete || 0, false)}
-    ${diffRow('Total Flows', sa.total_flows || 0, sb.total_flows || 0, false)}
-    ${diffRow('Total Packets', a.total_packets || 0, b.total_packets || 0, false)}`;
+    ${diffRow('TCP Resets', sa.tcp_resets||0, sb.tcp_resets||0, true)}
+    ${diffRow('Zero Windows', sa.zero_windows||0, sb.zero_windows||0, true)}
+    ${diffRow('Out of Order', sa.out_of_order||0, sb.out_of_order||0, true)}
+    ${diffRow('TLS Failures', sa.tls_incomplete_handshakes||0, sb.tls_incomplete_handshakes||0, true)}
+    ${diffRow('TLS Complete', sa.tls_handshakes_complete||0, sb.tls_handshakes_complete||0, false)}
+    ${diffRow('Total Flows', sa.total_flows||0, sb.total_flows||0, false)}
+    ${diffRow('Total Packets', a.total_packets||0, b.total_packets||0, false)}`;
 }
 
 // ─── AI Diagnosis ─────────────────────────────────────────
 async function generateAIDiagnosis() {
   if (!currentReport) return;
-  const btn = $('ai-btn');
-  const spinner = $('ai-spinner');
-  const result = $('ai-result');
-  btn.disabled = true;
-  spinner.classList.add('active');
-  result.innerHTML = '';
-
+  const btn = $('ai-btn'), spinner = $('ai-spinner'), result = $('ai-result');
+  btn.disabled = true; spinner.classList.add('active'); result.innerHTML = '';
   try {
     const res = await fetch('/api/summary', {
       method: 'POST',
@@ -732,83 +907,51 @@ async function generateAIDiagnosis() {
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-    if (data.summary) {
-      result.innerHTML = `<div class="ai-output">${esc(data.summary)}</div>
-        <div class="ai-note">Generated by Claude (claude-opus-4-7) · Results are advisory only</div>`;
-    } else {
-      result.innerHTML = `<div class="ai-note" style="margin-top:10px">&#x26A0; ${esc(data.message || 'AI diagnosis unavailable.')}</div>`;
-    }
+    result.innerHTML = data.summary
+      ? `<div class="ai-output">${esc(data.summary)}</div><div class="ai-note">Generated by Claude (claude-opus-4-7) &middot; Results are advisory only</div>`
+      : `<div class="ai-note" style="margin-top:10px">&#x26A0; ${esc(data.message || 'AI diagnosis unavailable.')}</div>`;
   } catch (err) {
     result.innerHTML = `<div class="ai-note" style="color:var(--red);margin-top:10px">&#x26A0; ${esc(err.message)}</div>`;
   } finally {
-    btn.disabled = false;
-    spinner.classList.remove('active');
+    btn.disabled = false; spinner.classList.remove('active');
   }
 }
 
 // ─── Export ───────────────────────────────────────────────
 function exportReport() {
   if (!currentReport) return;
-  const r = currentReport;
-  const styleEl = document.querySelector('style');
-  const css = styleEl ? styleEl.textContent : '';
-  const fname = r.pcap_filename || 'export';
-  const exportDate = new Date().toUTCString();
-
-  // Snapshot the rendered results HTML (includes all rendered cards/tables/events)
+  const css = (document.querySelector('style') || {}).textContent || '';
+  const fname = currentReport.pcap_filename || 'export';
   const resultsHTML = $('results').innerHTML;
-
-  // We need allEvents and renderEventsFiltered for interactive tabs in the export
   const eventsJSON = JSON.stringify(allEvents);
-
   const html = [
-    '<!DOCTYPE html>',
-    '<html lang="en">',
-    '<head>',
-    '<meta charset="UTF-8">',
+    '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">',
     `<title>PCAP Report — ${fname}</title>`,
-    `<style>${css}</style>`,
-    '</head>',
-    '<body>',
-    '<div class="app">',
-    '<header>',
-    '<div>',
-    `<h1>&#x1F50D; PCAP Analyzer Report</h1>`,
-    `<div class="sub">Exported ${exportDate} &nbsp;&middot;&nbsp; ${fname}</div>`,
-    '</div>',
-    '</header>',
+    `<style>${css}</style></head><body><div class="app">`,
+    '<header><div>',
+    '<h1>&#x1F50D; PCAP Analyzer Report</h1>',
+    `<div class="sub">Exported ${new Date().toUTCString()} &nbsp;&middot;&nbsp; ${esc(fname)}</div>`,
+    '</div></header>',
     `<div id="results">${resultsHTML}</div>`,
-    '</div>',
-    '<script>',
-    `const $ = id => document.getElementById(id);`,
-    `let allEvents = ${eventsJSON};`,
-    `function fmt_bytes(n){if(!n)return'0 B';if(n<1024)return n+' B';if(n<1024*1024)return(n/1024).toFixed(1)+' KB';return(n/1024/1024).toFixed(1)+' MB';}`,
+    '</div><script>',
+    `const $=id=>document.getElementById(id);let allEvents=${eventsJSON};`,
     `function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}`,
-    `function renderEventsFiltered(tab){`,
-    `  const list=$('events-list'),empty=$('events-empty'),countEl=$('events-count');`,
-    `  const filtered=allEvents.filter(e=>tab==='tcp'?e.layer==='tcp':tab==='tls'?e.layer==='tls':true);`,
-    `  countEl.textContent=filtered.length+' events';`,
-    `  if(!filtered.length){list.innerHTML='';empty.classList.remove('hidden');return;}`,
-    `  empty.classList.add('hidden');`,
-    `  list.innerHTML=filtered.map(e=>{`,
-    `    const sev=e.severity,badgeCls=sev==='critical'?'badge-critical':sev==='warning'?'badge-warning':'badge-info';`,
-    `    const layerBadge=e.layer==='tls'?'badge-tls':'badge-tcp';`,
+    `function renderEventsTo(events,tab,listId,emptyId){`,
+    `  const f=events.filter(e=>tab==='tcp'?e.layer==='tcp':tab==='tls'?e.layer==='tls':true);`,
+    `  const list=$(listId),empty=emptyId?$(emptyId):null;`,
+    `  if(!f.length){list.innerHTML='';if(empty)empty.classList.remove('hidden');return;}`,
+    `  if(empty)empty.classList.add('hidden');`,
+    `  list.innerHTML=f.map(e=>{`,
+    `    const bc=e.severity==='critical'?'badge-critical':e.severity==='warning'?'badge-warning':'badge-info';`,
+    `    const lb=e.layer==='tls'?'badge-tls':'badge-tcp';`,
     `    const ts=e.time_relative!=null?'+'+e.time_relative.toFixed(3)+'s':'';`,
-    `    const evType=(e.event_type||e.type||'').replace(/_/g,' ');`,
-    `    return '<div class="event-row"><span class="ts mono">'+ts+'</span><span><span class="badge '+badgeCls+'">'+evType+'</span></span><span><span class="badge '+layerBadge+'">'+(e.layer||'').toUpperCase()+'</span></span><span class="ep mono">'+esc(e.src||'')+'</span><span class="ep mono">'+esc(e.dst||'')+'</span><span class="detail">'+esc(e.detail||'')+'</span></div>';`,
-    `  }).join('');`,
-    `}`,
-    `const tabsEl=document.querySelector('#results .tabs');`,
-    `if(tabsEl){tabsEl.addEventListener('click',e=>{`,
-    `  const tab=e.target.closest('.tab');if(!tab)return;`,
-    `  tabsEl.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));`,
-    `  tab.classList.add('active');renderEventsFiltered(tab.dataset.tab);`,
-    `});}`,
-    `// Hide export/AI controls in the snapshot`,
+    `    const et=(e.event_type||e.type||'').replace(/_/g,' ');`,
+    `    return '<div class="event-row"><span class="ts mono">'+ts+'</span><span><span class="badge '+bc+'">'+et+'</span></span><span><span class="badge '+lb+'">'+(e.layer||'').toUpperCase()+'</span></span><span class="ep mono">'+esc(e.src||'')+'</span><span class="ep mono">'+esc(e.dst||'')+'</span><span class="detail">'+esc(e.detail||'')+'</span></div>';`,
+    `  }).join('');}`,
+    `const tabs=$('events-tabs');`,
+    `if(tabs)tabs.addEventListener('click',ev=>{const t=ev.target.closest('.tab');if(!t)return;tabs.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');renderEventsTo(allEvents,t.dataset.tab,'events-list','events-empty');});`,
     `['export-btn','ai-btn','ai-spinner','ai-panel'].forEach(id=>{const el=$(id);if(el)el.style.display='none';});`,
-    '<\/script>',
-    '</body>',
-    '</html>',
+    '<\/script></body></html>',
   ].join('\n');
 
   const blob = new Blob([html], { type: 'text/html' });

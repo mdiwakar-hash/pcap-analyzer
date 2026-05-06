@@ -55,9 +55,18 @@ def parse_multipart(body: bytes, content_type: str) -> dict:
             continue
         name = name_m.group(1)
         if file_m:
-            result[name] = {'filename': file_m.group(1), 'data': content}
+            value = {'filename': file_m.group(1), 'data': content}
         else:
-            result[name] = content.decode('utf-8', errors='replace')
+            value = content.decode('utf-8', errors='replace')
+        # Accumulate repeated field names (e.g. multiple file inputs) into a list
+        if name in result:
+            existing = result[name]
+            if isinstance(existing, list):
+                existing.append(value)
+            else:
+                result[name] = [existing, value]
+        else:
+            result[name] = value
     return result
 
 
@@ -78,6 +87,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_analyze()
         elif self.path == "/api/compare":
             self._handle_compare()
+        elif self.path == "/api/batch":
+            self._handle_batch()
         elif self.path == "/api/summary":
             self._handle_summary()
         else:
@@ -132,6 +143,69 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
+
+    def _handle_batch(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        content_type = self.headers.get("Content-Type", "")
+        body = self.rfile.read(content_length)
+        form = parse_multipart(body, content_type)
+
+        files = form.get("pcap_files", [])
+        if isinstance(files, dict):
+            files = [files]
+        files = [f for f in (files if isinstance(files, list) else []) if isinstance(f, dict)]
+
+        if not files:
+            self._error(400, "No PCAP files uploaded")
+            return
+
+        def _str(k):
+            v = form.get(k, "")
+            return v.strip() if isinstance(v, str) else ""
+
+        filters = {
+            "endpoint_ip": _str("endpoint_ip"),
+            "src_ip": _str("src_ip"),
+            "dst_ip": _str("dst_ip"),
+            "port": _str("port"),
+            "protocol": _str("protocol"),
+        }
+
+        tmp_paths = []
+        reports = []
+        try:
+            for field in files:
+                tmp = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}.pcap")
+                with open(tmp, "wb") as f:
+                    f.write(field["data"])
+                tmp_paths.append(tmp)
+                report = run_analysis(tmp, filters)
+                report["pcap_filename"] = field.get("filename", "upload.pcap")
+                reports.append(report)
+
+            def _score(r):
+                s = r.get("summary", {})
+                return (
+                    (s.get("retransmissions", 0) + s.get("fast_retransmissions", 0))
+                    + s.get("tcp_resets", 0) * 3
+                    + s.get("zero_windows", 0) * 2
+                    + s.get("tls_incomplete_handshakes", 0) * 3
+                    + s.get("tls_alerts", 0) * 2
+                    + s.get("out_of_order", 0)
+                )
+
+            reports.sort(key=_score, reverse=True)
+            for r in reports:
+                r["_disruption_score"] = _score(r)
+
+            self._json({"reports": reports, "total_files": len(reports)})
+
+        except Exception as exc:
+            self._json({"error": str(exc)}, status=500)
+        finally:
+            for tmp in tmp_paths:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
 
     def _handle_compare(self):
         content_length = int(self.headers.get("Content-Length", 0))
